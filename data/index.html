@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="apple-mobile-web-app-capable" content="yes">
+      <title>Rave Controller</title>
+      <link rel="icon" type="image/x-icon" href="r-logo.ico">
+      <link rel="stylesheet" href="index.css">
+      <script src="index.js"></script>
+    </head>
+
+    <body>
+        <div class="panel">
+            <div id="gauge-container">
+                <div id="gauge">
+                    <div id="gauge-in"></div>
+                </div>
+                <div id="rpm-value" class="rpm-value">0</div>
+                <div class="rpm">RPM</div>
+            </div>
+
+            <h1 id="maxrpm">MAX RPM: 0</h1>
+
+            <div class="rpm-container">
+                <div id="status-led" class="led-red"></div>
+            </div>
+        </div>
+    </body>
+</html>
