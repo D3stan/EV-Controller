@@ -102,43 +102,13 @@ void notFound(AsyncWebServerRequest *request) {
     request->send(404, "text/plain", "Not Found");
 }
 
-
-AsyncCallbackJsonWebHandler* JsonHandler = new AsyncCallbackJsonWebHandler("/post", [](AsyncWebServerRequest *request, JsonVariant &json) {
-    json.as<JsonObject>();
-    String message = "";
-
-    /*
-    if (json.containsKey("rpm") && json.containsKey("micros") && json.containsKey("microsADV")) {
-
-        rpm = json["rpm"];          // no atoi cause we send integers from the JS
-        toWaitRPM = json["micros"];
-        toWaitADV = json["microsADV"];
-
-        if (rpm >= 500 && toWaitRPM > 10 && toWaitADV > 10) {
-            message.concat("JSON received, RPM: " + String(rpm) + " micros: " + String(toWaitRPM));
-            request->send(200, "text/plain", message);
-            canFire = true;
-
-        } else {
-            message.concat("Invalid values, RPM: " + String(rpm) + " toWait: " + String(toWaitRPM) + " toWaitADV " + String(toWaitADV));
-            request->send(416, "text/plain", message);
-        }
-     
-    } else {
-        message.concat("Missing required fields");
-        request->send(400, "text/plain", message);
-    }*/
-});
-
 void initWebServer(bool FSmounted) {
     if (FSmounted) {
         server.serveStatic("/", LittleFS, "/").setDefaultFile("index.html");
     } else {
         server.on("/", onRootRequest);
     }
-
     server.onNotFound(notFound);
-    server.addHandler(JsonHandler);
 
     server.begin();
     ArduinoOTA.begin();
@@ -162,7 +132,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
     AwsFrameInfo *info = (AwsFrameInfo*)arg;
     if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT) {
 
-        JsonDocument  json;
+        JsonDocument json;
         DeserializationError err = deserializeJson(json, data);
         if (err) {
             Serial.print(F("deserializeJson() failed with code "));
