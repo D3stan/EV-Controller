@@ -16,6 +16,8 @@ var wifiSSID = ""
 // ----------------------------------------------------------------------------
 
 var statusLed
+var statusPage
+var settingsPage
 var raveLed
 var gauge
 var rpmText
@@ -36,6 +38,8 @@ function onLoad(event) {
 
     // html elements
     statusLed = document.getElementById('status-led')
+    statusPage   = document.getElementById('status-page')
+    settingsPage   = document.getElementById('settings-page')
     raveLed   = document.getElementById('rave-led')
     gauge     = document.getElementById('gauge')
     rpmText   = document.getElementById('rpm-value')
@@ -104,30 +108,7 @@ function closePopup() {
 }
 
 function updateSoftware() {
-    popUpText.textContent = "Checking for new update..."
-    
-    if (popUp.firstElementChild.lastElementChild.tagName == 'BUTTON') {
-        popUp.firstElementChild.removeChild(popUp.firstElementChild.lastElementChild)
-        popUp.firstElementChild.removeChild(popUp.firstElementChild.lastElementChild)
-        popUp.firstElementChild.removeChild(popUp.firstElementChild.lastElementChild)
-    }
-
-    // check if loading circle already added
-    if (popUp.firstElementChild.lastElementChild.classList.value != "loading-circle") {
-        let loadingCircle = document.createElement('div')
-        loadingCircle.classList.add('loading-circle')
-        popUp.firstElementChild.appendChild(loadingCircle)
-    }
-    
-    showPopup()
-}
-
-function openSettings() {
     popUpText.textContent = "Update Settings"
-
-    if (popUp.firstElementChild.lastElementChild.classList.value == "loading-circle") {
-        popUp.firstElementChild.removeChild(popUp.firstElementChild.lastElementChild)
-    }
     
     // check if inputField already added
     if (popUp.firstElementChild.lastElementChild.tagName != 'BUTTON') {
@@ -158,6 +139,24 @@ function openSettings() {
     
     showPopup()
 }
+
+function openSettings() {
+ statusPage.style.display = "none"
+ settingsPage.removeAttribute("style")
+}
+
+slider.oninput = function() {
+    if (timerID) clearTimeout(timerID)
+    valueDisplay.innerText = this.value;
+    timerID = setTimeout(() => {
+        setRpm()
+    }, 200)
+    /*
+    var req = new XMLHttpRequest();
+    req.open('GET', `${window.location.hostname}/rpm?RPM=${this.value}`, true);
+    req.send();
+    */
+};
 
 function updateGauge(rpm) {
     const maxRpm = 15000; // Maximum RPM value

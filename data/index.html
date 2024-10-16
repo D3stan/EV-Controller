@@ -24,7 +24,7 @@
             <img src="settings.png" id="settings">
         </div>
 
-        <div class="panel">
+        <div class="panel" id="status-page">
             <div id="gauge-container">
                 <div id="gauge">
                     <div id="gauge-in"></div>
@@ -47,6 +47,20 @@
                 <div id="rave-led" class="led-red"></div>
             </div>
             
+        </div>
+        <div class="panel" style="display: none;" id="settings-page">
+            <input type='range' id='slider' min='500' max='20000' value='500'>
+            <div class="rpm-container">
+                <h1>CONNECTION: </h1>
+                <h1>  </h1>
+                <div id="status-led" class="led-red"></div>
+            </div>
+
+            <div class="rpm-container">
+                <h1>RAVE: </h1>
+                <h1>  </h1>
+                <div id="rave-led" class="led-red"></div>
+            </div>
         </div>
     </body>
 </html>
