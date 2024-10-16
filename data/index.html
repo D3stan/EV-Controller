@@ -12,6 +12,18 @@
     </head>
 
     <body>
+        <div id="popup" class="popup hidden">
+            <div class="popup-content">
+                <span class="close" onclick="closePopup()">x</span>
+                <p id="popup-text">Error.</p>
+            </div>
+        </div>
+        
+        <div class="user-settings">
+            <img src="update.png" id="update">
+            <img src="settings.png" id="settings">
+        </div>
+
         <div class="panel">
             <div id="gauge-container">
                 <div id="gauge">
@@ -21,11 +33,20 @@
                 <div class="rpm">RPM</div>
             </div>
 
-            <h1 id="maxrpm">MAX RPM: 0</h1>
+            <h1>  </h1>
 
             <div class="rpm-container">
+                <h1>CONNECTION: </h1>
+                <h1>  </h1>
                 <div id="status-led" class="led-red"></div>
             </div>
+
+            <div class="rpm-container">
+                <h1>RAVE: </h1>
+                <h1>  </h1>
+                <div id="rave-led" class="led-red"></div>
+            </div>
+            
         </div>
     </body>
 </html>

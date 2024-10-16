@@ -5,9 +5,11 @@
 #include <ESP8266WiFi.h>
 #include <ESPAsyncTCP.h>
 #include <ESPAsyncWebServer.h>
+#include <ESP8266httpUpdate.h>
 
 #include <Ticker.h>
 #include <LittleFS.h>
+#include <EEPROM.h>
 
 // ----------------------------------------------------------------------------
 // Definition of macros
@@ -17,6 +19,27 @@
 #define BTN_PIN      5 
 #define INDUCTIVE_IN 4
 #define HTTP_PORT    80
+#define EEPROM_SIZE 512
+
+// ----------------------------------------------------------------------------
+// EEPROM mapping
+// ----------------------------------------------------------------------------
+
+/*
+0 - 99: WiFi
+    0: wifi mode (0=AP, 1=STA)
+    5 - 19: wifi SSID
+    20 - 34: wifi PSW
+    35 - 49: ap SSID
+    50 - 64: ap PSW
+
+100 - 199: User Settings
+    100: rave RPM close (V1)
+    101: rave RPM open (V1)
+
+
+*/
+
 
 // ----------------------------------------------------------------------------
 // Definition of global constants
@@ -63,6 +86,7 @@ Led    onboard_led = { LED_BUILTIN, true };
 AsyncWebServer server(HTTP_PORT);
 AsyncWebSocket ws("/ws");
 
+
 // ----------------------------------------------------------------------------
 // Interrupt for RPM measurement
 // ----------------------------------------------------------------------------
@@ -78,20 +102,31 @@ IRAM_ATTR void signalDetected() {
 
 }
 
+
 // ----------------------------------------------------------------------------
 // Connecting to the WiFi network
 // ----------------------------------------------------------------------------
 
 void initWiFi() {
-    WiFi.mode(WIFI_AP);
-    WiFi.softAPConfig(AP_IP, AP_IP, IPAddress(255, 255, 255, 0));
-    WiFi.softAP(AP_SSID, AP_PASS);
+    byte wifiMode = EEPROM.read(0);
 
-    Serial.printf(" %s\n", WiFi.softAPIP().toString().c_str());
+    if (wifiMode) {
+        WiFi.mode(WIFI_AP);
+        WiFi.softAPConfig(AP_IP, AP_IP, IPAddress(255, 255, 255, 0));
+        WiFi.softAP(AP_SSID, AP_PASS);
+
+        Serial.printf(" %s\n", WiFi.softAPIP().toString().c_str());
+    
+    } else {
+        WiFi.mode(WIFI_STA);
+        WiFi.begin(WIFI_SSID, WIFI_PASS);
+    }
+
+    
 }
 
 // ----------------------------------------------------------------------------
-// Web server initialization
+// Web server
 // ----------------------------------------------------------------------------
 
 void onRootRequest(AsyncWebServerRequest *request) {
@@ -115,7 +150,7 @@ void initWebServer(bool FSmounted) {
 }
 
 // ----------------------------------------------------------------------------
-// WebSocket initialization
+// WebSocket
 // ----------------------------------------------------------------------------
 
 void updateRPM(unsigned long rpm = 0) {
@@ -205,6 +240,7 @@ void initGPIO() {
 // ----------------------------------------------------------------------------
 
 void setup() {
+    EEPROM.begin(EEPROM_SIZE);
     initGPIO();
     initWiFi();
     initWebSocket();
