@@ -2,31 +2,36 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-  }
+}
+html, body {
+  height: 100%;
+  font-family: Roboto, sans-serif;
+  font-size: 12pt;
+  overflow: auto;
+}
+body {
+  /**/display: grid;
+  align-items: center;
+  justify-items: center;
+  height: 100vh; /* Full viewport height */
+  margin: 0;
+}
 
-  html, body {
-    height: 100%;
-    font-family: Roboto, sans-serif;
-    font-size: 12pt;
-    overflow: hidden;
-  }
-
-  body {
-    /**/display: grid;
-    align-items: center;
-    justify-items: center;
-    height: 100vh; /* Full viewport height */
-    margin: 0;
-  }
-
-  .panel {
+.panel {
     position: absolute;
     display: grid;
     grid-gap: 3em;
     justify-items: center;
-  }
+}
 
-  .user-settings {
+.toggle-container {
+    all: unset; /* Removes all default styling on the div */
+    display: inherit;
+    grid-gap: 1em;
+    justify-items: inherit;
+}
+
+.user-settings {
     position: absolute;
     top: 20px; /* Adjust the distance from the top */
     left: 0;
@@ -195,7 +200,6 @@ h1 {
 input[type="text"], input[type="email"], input[type="password"] {
     width: 100%;
     padding: 10px;
-    margin: 10px 0;
     border: 2px solid #ccc;
     border-radius: 5px;
     font-size: 16px;
@@ -205,6 +209,14 @@ input[type="text"], input[type="email"], input[type="password"] {
 
 input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus {
     border-color: #333; /* Darker border on focus */
+}
+
+input[type="text"]:invalid:focus {
+    border-color: #e63946; /* Soft red color on error */
+}
+
+input[type="text"]:valid:focus {
+    border-color: #47e639; /* Soft red color on error */
 }
 
 .wifi-settings {
@@ -226,4 +238,81 @@ input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focu
 .wifi-settings:focus {
     outline: none; /* Remove default outline */
     border-color: #333; /* Darker border when focused */
+}
+
+
+
+.custom-dropdown {
+    position: relative;
+    width: 100%;
+    max-width: 400px; /* Set a max-width for better appearance */
+    min-width: 150px;
+}
+
+/* Style for the dropdown button */
+.dropdown-toggle {
+  width: 100%;
+  padding: 10px;
+  border: 2px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+  background-color: #fff;
+  color: #333;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.3s ease;
+  position: relative; /* Position relative for the arrow */
+}
+
+/* Adding an arrow */
+.dropdown-toggle::after {
+  content: '▼'; /* Unicode character for downward arrow */
+  position: absolute;
+  right: 10px; /* Space from the right */
+  top: 50%;
+  transform: translateY(-50%); /* Center the arrow vertically */
+  font-size: 12px;
+  color: #333; /* Color of the arrow */
+}
+
+/* Change border color on focus */
+.dropdown-toggle:focus {
+  border-color: #333;
+  outline: none;
+}
+
+/* Dropdown options (hidden by default) */
+.dropdown-options {
+  position: absolute;
+  width: 100%;
+  margin: 5px 0 0;
+  padding: 0;
+  list-style: none;
+  border: 2px solid #ccc;
+  border-radius: 5px;
+  background-color: #fff;
+  max-height: 200px;
+  overflow-y: auto;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  display: none;
+  z-index: 1000;
+}
+
+/* Individual option items */
+.dropdown-options li {
+  padding: 10px;
+  font-size: 16px;
+  color: #333;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+/* Hover effect for dropdown options */
+.dropdown-options li:hover {
+  background-color: #f2f2f2;
+}
+
+/* Show dropdown options when dropdown is open */
+.custom-dropdown.open .dropdown-options {
+  display: block;
 }

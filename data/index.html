@@ -48,19 +48,32 @@
             </div>
             
         </div>
+
         <div class="panel" style="display: none;" id="settings-page">
-            <input type='range' id='slider' min='500' max='20000' value='500'>
-            <div class="rpm-container">
-                <h1>CONNECTION: </h1>
-                <h1>  </h1>
-                <div id="status-led" class="led-red"></div>
+            <div class="custom-dropdown">
+                <button id="dropdownButton" class="dropdown-toggle">Rave Settings</button>
+                <ul id="dropdownOptions" class="dropdown-options">
+                    <li data-value="rave">Rave Settings</li>    
+                    <li data-value="wifi">WiFi Settings</li>
+                </ul>
             </div>
 
-            <div class="rpm-container">
-                <h1>RAVE: </h1>
-                <h1>  </h1>
-                <div id="rave-led" class="led-red"></div>
+            <div id="rave-settings" class="toggle-container">
+                <input type='range' id='rpm-close-slider' min='500' max='20000' value='500'>
+                <input type='range' id='rpm-open-slider' min='500' max='20000' value='500'>
             </div>
+            
+
+            <div id="wifi-settings" class="toggle-container" style="display: none;">
+                <input type="text" id="wifi-ssid" placeholder="wifi name"     minlength="8" required>
+                <input type="text" id="wifi-psw" placeholder="wifi password"  minlength="8" required>
+                <br>
+                <input type="text" id="ap-ssid" placeholder="hotspot name"    minlength="8" required>
+                <input type="text" id="ap-psw" placeholder="hotspot password" minlength="8" required>
+            </div> 
+            
+
+            <button class="wifi-settings" id="update-settings">Update</button>
         </div>
     </body>
 </html>

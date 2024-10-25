@@ -1,5 +1,6 @@
 var gateway = `ws://${window.location.hostname}/ws`;
 var websocket;
+var statusPageActive = true
 
 var currentDegrees = 0;
 var animationSpeed = 0.05; // Adjust this value to control the speed of the gauge animation
@@ -25,6 +26,11 @@ var updateButton
 var settingsButton
 var popUp
 var popUpText
+var updateSettingsButton
+var dropdownButton 
+var dropdownOptions
+var raveSettings
+var wifiSettings
 
 // ----------------------------------------------------------------------------
 // Initialization
@@ -47,10 +53,44 @@ function onLoad(event) {
     settingsButton = document.getElementById('settings')
     popUp = document.getElementById('popup')
     popUpText = document.getElementById('popup-text')
+    updateSettingsButton = document.getElementById('update-settings')
+    dropdownButton = document.getElementById("dropdownButton");
+    dropdownOptions = document.getElementById("dropdownOptions");
+    raveSettings = document.getElementById("rave-settings");
+    wifiSettings = document.getElementById("wifi-settings");
 
-    updateButton.addEventListener("click", updateSoftware)
+    updateButton.addEventListener("click", openUpdateDialog)
     settingsButton.addEventListener("click", openSettings)
+    updateSettingsButton.addEventListener("click", updateSettings)
+
+
     
+
+    // Toggle dropdown visibility on button click
+    dropdownButton.addEventListener("click", function () {
+        dropdownOptions.parentElement.classList.toggle("open");
+    });
+
+    // Select an option and update button text
+    dropdownOptions.addEventListener("click", function (event) {
+        if (event.target.tagName === "LI") {
+            const selectedOption = event.target;
+            dropdownButton.textContent = selectedOption.textContent;
+            dropdownOptions.parentElement.classList.remove("open");
+            
+
+
+            // Trigger custom actions based on selected option
+            handleOptionSelect(selectedOption.getAttribute("data-value"));
+        }
+    });
+
+    // Close dropdown if clicked outside
+    document.addEventListener("click", function (event) {
+        if (!dropdownOptions.contains(event.target) && !dropdownButton.contains(event.target)) {
+            dropdownOptions.parentElement.classList.remove("open");
+        }
+    });
 
 }
 
@@ -107,7 +147,7 @@ function closePopup() {
     popUp.classList.add('hidden');
 }
 
-function updateSoftware() {
+function openUpdateDialog() {
     popUpText.textContent = "Update Settings"
     
     // check if inputField already added
@@ -123,8 +163,9 @@ function updateSoftware() {
 
         let buttonWifi = document.createElement("button")
         buttonWifi.classList.add("wifi-settings")
-        buttonWifi.textContent = "SEND"
+        buttonWifi.textContent = "Update"
         popUp.firstElementChild.appendChild(buttonWifi)
+
         buttonWifi.addEventListener("click", () => {
             wifiPSW = document.getElementsByTagName("input")[0].value
             wifiSSID = document.getElementsByTagName("input")[1].value
@@ -141,9 +182,44 @@ function updateSoftware() {
 }
 
 function openSettings() {
- statusPage.style.display = "none"
- settingsPage.removeAttribute("style")
+    if (statusPageActive) {
+        statusPage.style.display = "none"
+        settingsPage.removeAttribute("style")
+        statusPageActive = false
+    } else {
+        settingsPage.style.display = "none"
+        statusPage.removeAttribute("style")
+        statusPageActive = true
+    }
+    
 }
+
+function updateSettings() {
+    wifiPSW = document.getElementsByTagName("input")[0].value
+    wifiSSID = document.getElementsByTagName("input")[1].value
+    let toSend = JSON.stringify({
+        wifiPSW: wifiPSW,
+        wifiSSID: wifiSSID
+    })
+    websocket.send(toSend)
+    console.log(toSend)
+}
+
+
+// Function to handle option selection
+function handleOptionSelect(value) {
+    // Add any additional actions here based on the selected option
+    if (value === "rave") {
+        wifiSettings.style.display = "none"
+        raveSettings.removeAttribute("style")
+
+    } else if (value === "wifi") {
+        raveSettings.style.display = "none"
+        wifiSettings.removeAttribute("style")
+
+    }
+}
+
 
 slider.oninput = function() {
     if (timerID) clearTimeout(timerID)
