@@ -6,10 +6,10 @@
 #include <ESPAsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 #include <ESP8266httpUpdate.h>
+#include <notfound.h>
 
 #include <Ticker.h>
 #include <LittleFS.h>
-#include <EEPROM.h>
 
 // ----------------------------------------------------------------------------
 // Definition of macros
@@ -19,41 +19,25 @@
 #define BTN_PIN      5 
 #define INDUCTIVE_IN 4
 #define HTTP_PORT    80
-#define EEPROM_SIZE 512
-
-// ----------------------------------------------------------------------------
-// EEPROM mapping
-// ----------------------------------------------------------------------------
-
-/*
-0 - 99: WiFi
-    0: wifi mode (0=AP, 1=STA)
-    5 - 19: wifi SSID
-    20 - 34: wifi PSW
-    35 - 49: ap SSID
-    50 - 64: ap PSW
-
-100 - 199: User Settings
-    100: rave RPM close (V1)
-    101: rave RPM open (V1)
-
-
-*/
 
 
 // ----------------------------------------------------------------------------
 // Definition of global constants
 // ----------------------------------------------------------------------------
 
-// Button debouncing
-const uint8_t DEBOUNCE_DELAY = 10; // in milliseconds
+File configFile;
+JsonDocument config;
+bool FSmounted = false;
+String errorReplacementPage = index_html;
 
-// WiFi credentials
-const char *WIFI_SSID = "GiuseppeBagnile";
-const char *WIFI_PASS = "MikroTik2020";
+// WiFi globals
+unsigned int wifiMode = WIFI_AP;
 
-const char *AP_SSID = "rpmcounter";
-const char *AP_PASS = "ciaociao";
+const char *WIFI_SSID = "";
+const char *WIFI_PASS = "";
+
+const char *AP_SSID = "";
+const char *AP_PASS = "";
 IPAddress AP_IP (42, 42, 42, 42);
 
 // rpm count
@@ -61,6 +45,10 @@ unsigned long RPM = 0;
 unsigned long currentMicros = 0;
 unsigned long lastMicros = 0;
 unsigned long displayMillis = 0;
+
+// rave controlling values
+unsigned int raveRpmOpen = 0;
+unsigned int raveRpmClose = 0;
 
 // ----------------------------------------------------------------------------
 // Definition of the LED component
@@ -108,21 +96,20 @@ IRAM_ATTR void signalDetected() {
 // ----------------------------------------------------------------------------
 
 void initWiFi() {
-    byte wifiMode = EEPROM.read(0);
-
-    if (wifiMode) {
+    if (wifiMode == WIFI_AP) {
         WiFi.mode(WIFI_AP);
         WiFi.softAPConfig(AP_IP, AP_IP, IPAddress(255, 255, 255, 0));
         WiFi.softAP(AP_SSID, AP_PASS);
 
         Serial.printf(" %s\n", WiFi.softAPIP().toString().c_str());
     
-    } else {
+    } else if (wifiMode == WIFI_STA) {
         WiFi.mode(WIFI_STA);
         WiFi.begin(WIFI_SSID, WIFI_PASS);
-    }
 
-    
+        Serial.printf(" %s\n", WiFi.localIP().toString().c_str());
+
+    }
 }
 
 // ----------------------------------------------------------------------------
@@ -130,14 +117,30 @@ void initWiFi() {
 // ----------------------------------------------------------------------------
 
 void onRootRequest(AsyncWebServerRequest *request) {
-    request->send(500, "text/html", "File System not mounted correclty");
+    const char* errorMsg = "";
+
+    if (!FSmounted) {
+        errorMsg = "Error: filesystem not mounted correctly";
+    } else if (!configFile) {
+        errorMsg = "Error: cannot read config file";
+    } else if (config.isNull()) {
+        errorMsg = "Error: cannot parse config file";
+    }
+
+    errorReplacementPage = index_html;
+    errorReplacementPage.replace(errorPlaceHolder, errorMsg);
+    errorReplacementPage.replace(errorCodePlaceHolder, "500");
+    request->send_P(500, "text/html", index_html);
 }
 
 void notFound(AsyncWebServerRequest *request) {
-    request->send(404, "text/plain", "Not Found");
+    errorReplacementPage = index_html;
+    errorReplacementPage.replace(errorPlaceHolder, "Error: Page Not Found");
+    errorReplacementPage.replace(errorCodePlaceHolder, "404");
+    request->send(404, "text/html", index_html);
 }
 
-void initWebServer(bool FSmounted) {
+void initWebServer() {
     if (FSmounted) {
         server.serveStatic("/", LittleFS, "/").setDefaultFile("index.html");
     } else {
@@ -218,12 +221,36 @@ void initWebSocket() {
 // Utils
 // ----------------------------------------------------------------------------
 
-bool initFS() {
+void initFS() {
     if (!LittleFS.begin()) {
         Serial.println("An error has occurred while mounting LittleFS");
-        return false;
+        FSmounted = false;
+        return;
     }
-    return true;
+
+    FSmounted = true;
+    configFile = LittleFS.open("/config.json", "r+");
+    if (!configFile) {
+        Serial.println("Error reading config file");
+        return;
+    }
+
+    
+    DeserializationError err = deserializeJson(config, configFile.readString());
+    if (err) {
+        Serial.print(F("deserializeJson() failed with code "));
+        Serial.println(err.c_str());
+        return;
+    }
+
+    wifiMode = config["wifi-mode"];
+    WIFI_PASS = config["wifi-psw"];
+    WIFI_SSID = config["wifi-ssid"];
+    AP_SSID = config["ap-ssid"];
+    AP_PASS = config["ap-psw"];
+    raveRpmOpen = config["rave-rpm-open"];
+    raveRpmClose = config["rave-rpm-close"];    
+
 }
 
 void initGPIO() {
@@ -240,11 +267,12 @@ void initGPIO() {
 // ----------------------------------------------------------------------------
 
 void setup() {
-    EEPROM.begin(EEPROM_SIZE);
     initGPIO();
+    initFS();
+    
     initWiFi();
     initWebSocket();
-    initWebServer(initFS());
+    initWebServer();
 }
 
 // ----------------------------------------------------------------------------

@@ -1,0 +1,9 @@
+{
+    "wifi-mode": 2,
+    "wifi-psw": "password",
+    "wifi-ssid": "wifissid",
+    "ap-psw": "password",
+    "ap-ssid": "apssid",
+    "rave-rpm-open": 9000,
+    "rave-rpm-close": 4000
+}
