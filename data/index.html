@@ -15,7 +15,13 @@
         <div id="popup" class="popup hidden">
             <div class="popup-content">
                 <span class="close" onclick="closePopup()">x</span>
-                <p id="popup-text">Error.</p>
+                <h2 id="popup-text">Error.</h2>
+                <div class="text-popup">
+                    <p id="popup-fwid">Software Version: </p>
+                    <p id="popup-fsid">Interface Version: </p>
+                    <p id="popup-hwid">HWID: </p>
+                </div>
+                <button id="restart-button" class="wifi-settings">Update</button>
             </div>
         </div>
         
@@ -59,8 +65,11 @@
             </div>
 
             <div id="rave-settings" class="toggle-container">
-                <input type='range' id='rpm-close-slider' min='500' max='20000' value='500'>
-                <input type='range' id='rpm-open-slider' min='500' max='20000' value='500'>
+                <h2 id='rpm-close-value'>Error</h2>
+                <input type='range' class="rpm-slider" id='rpm-close-slider' step="500" min='500' max='6500' value='3500'>
+                <br>
+                <h2 id='rpm-open-value'>Error</h2>
+                <input type='range' class="rpm-slider" id='rpm-open-slider' step="500" min='7500' max='15500' value='11500'>
             </div>
             
 

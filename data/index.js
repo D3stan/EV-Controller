@@ -1,36 +1,67 @@
 var gateway = `ws://${window.location.hostname}/ws`;
 var websocket;
 var statusPageActive = true
+var timerID
 
 var currentDegrees = 0;
 var animationSpeed = 0.05; // Adjust this value to control the speed of the gauge animation
 
 var raveRpmClose = 3500
-var raveRpmOpen = 9500
+var raveRpmOpen = 11500
 
-var wifiPSW = ""
-var wifiSSID = ""
+var wifiPSW     = ""
+var wifiSSID    = ""
+var apPSW       = ""
+var apSSID      = ""
+
+var fwid = "Error"
+var fsid = "Error"
+var hwid = "Error"
 
 
 // ----------------------------------------------------------------------------
 // Elements
 // ----------------------------------------------------------------------------
 
-var statusLed
+// Pages
 var statusPage
 var settingsPage
-var raveLed
-var gauge
-var rpmText
-var updateButton
-var settingsButton
+
+// Containers
 var popUp
-var popUpText
-var updateSettingsButton
-var dropdownButton 
-var dropdownOptions
 var raveSettings
 var wifiSettings
+
+// Interactives
+var updateButton
+var settingsButton
+var updateSettingsButton
+var dropdownButton
+var restartButton
+var dropdownOptions
+
+// Indicators
+var statusLed
+var raveLed
+var gauge
+
+// Text fields
+var rpmText
+var popUpText
+var fwidText
+var fsidText
+var hwidText
+var rpmOpenText
+var rpmCloseText
+
+// Input Fields
+var wifiSsidInput
+var wifiPswInput
+var apSsidInput
+var apPswInput
+var rpmOpenSlider
+var rpmCloseSlider
+
 
 // ----------------------------------------------------------------------------
 // Initialization
@@ -43,28 +74,47 @@ function onLoad(event) {
     initWebSocket();
 
     // html elements
-    statusLed = document.getElementById('status-led')
-    statusPage   = document.getElementById('status-page')
-    settingsPage   = document.getElementById('settings-page')
-    raveLed   = document.getElementById('rave-led')
-    gauge     = document.getElementById('gauge')
-    rpmText   = document.getElementById('rpm-value')
-    updateButton = document.getElementById('update')
-    settingsButton = document.getElementById('settings')
-    popUp = document.getElementById('popup')
-    popUpText = document.getElementById('popup-text')
-    updateSettingsButton = document.getElementById('update-settings')
-    dropdownButton = document.getElementById("dropdownButton");
-    dropdownOptions = document.getElementById("dropdownOptions");
-    raveSettings = document.getElementById("rave-settings");
-    wifiSettings = document.getElementById("wifi-settings");
+    statusLed               = document.getElementById('status-led')
+    statusPage              = document.getElementById('status-page')
+    settingsPage            = document.getElementById('settings-page')
+    raveLed                 = document.getElementById('rave-led')
+    gauge                   = document.getElementById('gauge')
+    rpmText                 = document.getElementById('rpm-value')
+    updateButton            = document.getElementById('update')
+    settingsButton          = document.getElementById('settings')
+    popUp                   = document.getElementById('popup')
+    popUpText               = document.getElementById('popup-text')
+    updateSettingsButton    = document.getElementById('update-settings')
+    dropdownButton          = document.getElementById("dropdownButton");
+    dropdownOptions         = document.getElementById("dropdownOptions");
+    raveSettings            = document.getElementById("rave-settings");
+    wifiSettings            = document.getElementById("wifi-settings");
+    restartButton           = document.getElementById("restart-button");
+    fwidText                = document.getElementById("popup-fwid");
+    fsidText                = document.getElementById("popup-fsid");
+    hwidText                = document.getElementById("popup-hwid");
+    wifiSsidInput           = document.getElementById('wifi-ssid')
+    wifiPswInput            = document.getElementById('wifi-psw')
+    apSsidInput             = document.getElementById('ap-ssid')
+    apPswInput              = document.getElementById('ap-psw')
+    rpmOpenSlider           = document.getElementById('rpm-open-slider')
+    rpmCloseSlider          = document.getElementById('rpm-close-slider')
+    rpmOpenText             = document.getElementById('rpm-open-value')
+    rpmCloseText            = document.getElementById('rpm-close-value')
 
-    updateButton.addEventListener("click", openUpdateDialog)
+
+
+    updateButton.addEventListener("click", showPopup)
     settingsButton.addEventListener("click", openSettings)
     updateSettingsButton.addEventListener("click", updateSettings)
-
+    restartButton.addEventListener("click", restartForUpdate)
+    rpmCloseSlider.oninput = updateRpmSliderValue
+    rpmOpenSlider.oninput = updateRpmSliderValue
 
     
+    rpmCloseText.innerText = raveRpmClose
+    rpmOpenText.innerText = raveRpmOpen
+
 
     // Toggle dropdown visibility on button click
     dropdownButton.addEventListener("click", function () {
@@ -92,6 +142,9 @@ function onLoad(event) {
         }
     });
 
+
+    retrieveConfigValues()
+    updateAllDialogFields()
 }
 
 // ----------------------------------------------------------------------------
@@ -145,40 +198,19 @@ function showPopup() {
 
 function closePopup() {
     popUp.classList.add('hidden');
+    
 }
 
-function openUpdateDialog() {
+function updateAllDialogFields() {
     popUpText.textContent = "Update Settings"
-    
-    // check if inputField already added
-    if (popUp.firstElementChild.lastElementChild.tagName != 'BUTTON') {
-        let inputField = document.createElement('input')
-        inputField.type = "text"
-        inputField.placeholder = "wifi name"
-        popUp.firstElementChild.appendChild(inputField)
-        inputField = document.createElement('input')
-        inputField.type = "text"
-        inputField.placeholder = "wifi password"
-        popUp.firstElementChild.appendChild(inputField)
+    fwidText.textContent += fwid
+    fsidText.textContent += fsid
+    hwidText.textContent += hwid
 
-        let buttonWifi = document.createElement("button")
-        buttonWifi.classList.add("wifi-settings")
-        buttonWifi.textContent = "Update"
-        popUp.firstElementChild.appendChild(buttonWifi)
-
-        buttonWifi.addEventListener("click", () => {
-            wifiPSW = document.getElementsByTagName("input")[0].value
-            wifiSSID = document.getElementsByTagName("input")[1].value
-            let toSend = JSON.stringify({
-                wifiPSW: wifiPSW,
-                wifiSSID: wifiSSID
-            })
-            websocket.send(toSend)
-            console.log(toSend)
-        })
-    }
-    
-    showPopup()
+    wifiSsidInput.value   =  wifiSSID
+    wifiPswInput.value    =  wifiPSW 
+    apSsidInput.value     =  apSSID
+    apPswInput.value      =  apPSW   
 }
 
 function openSettings() {
@@ -195,11 +227,107 @@ function openSettings() {
 }
 
 function updateSettings() {
-    wifiPSW = document.getElementsByTagName("input")[0].value
-    wifiSSID = document.getElementsByTagName("input")[1].value
-    let toSend = JSON.stringify({
+    let toSend
+
+    if (raveSettings.style.display !== "none") {
+        // rave settings active
+        toSend = JSON.stringify({
+            raveRpmOpen: raveRpmOpen,
+            raveRpmClose: raveRpmClose
+        })
+        
+
+
+    } else if (wifiSettings.style.display !== "none") {
+        // wifi settings active
+        if (
+            wifiSsidInput.value.length < 8 ||
+            wifiPswInput.value < 8 ||
+            apSsidInput.value < 8 ||
+            apPswInput.value < 8
+        ) {
+            let content = updateSettingsButton.innerText
+            updateSettingsButton.innerText = "Error"
+            setTimeout(() => {
+                updateSettingsButton.innerText = content
+            }, 5000)
+            alert("Input must be at least 8 characters long!")
+            return
+        }
+        
+        wifiPSW = wifiSsidInput.value
+        wifiSSID = wifiPswInput.value
+
+        apPSW = apSsidInput.value
+        apSSID = apPswInput.value
+
+        toSend = JSON.stringify({
+            wifiPsw: wifiPSW,
+            wifiSsid: wifiSSID,
+            apPsw: apPSW,
+            apSsid: apSSID
+        })
+
+
+    } else {
+        console.log("No page active")
+        return
+    }
+
+
+    
+    toSend = JSON.stringify({
         wifiPSW: wifiPSW,
         wifiSSID: wifiSSID
+    })
+    websocket.send(toSend)
+    console.log(toSend)
+}
+
+function retrieveConfigValues() {
+    fetch(`${window.location.hostname}/config.json`, { method: "GET" })
+    .then(async res => {
+        let config = await res.json()
+        config = JSON.parse(config)
+
+        raveRpmClose = config.raveRpmClose
+        raveRpmOpen = config.raveRpmOpen
+        wifiPSW = config.wifiPsw
+        wifiSSID = config.wifiSsid
+        apPSW = config.apPsw
+        apSSID = config.apSsid
+        fwid = config.fwid
+        fsid = config.fsid
+        hwid = config.hwid
+
+    })
+    .catch(err => console.log(`Error when retrieving config values: ${err}`))
+}
+
+
+function restartForUpdate() {
+
+    if (!wifiPSW || !wifiSSID) {
+        console.log("WiFi psw or name not set!")
+        let preText = restartButton.textContent
+        restartButton.textContent = "Error"
+        if (confirm("Set WiFi name and password in the settings page!")) {
+            closePopup()
+            openSettings()
+            dropdownButton.click()
+            dropdownOptions.children[1].click()
+        }
+        
+        setTimeout(() => {
+            restartButton.textContent = preText
+        }, 5000)
+        return
+    }
+
+    let toSend = JSON.stringify({
+        update: true,
+        wifiPsw: wifiPSW,
+        wifiSsid: wifiSSID
     })
     websocket.send(toSend)
     console.log(toSend)
@@ -220,19 +348,21 @@ function handleOptionSelect(value) {
     }
 }
 
+function updateRpmSliderValue() {
+    document.getElementById(this.id.substring(0, this.id.lastIndexOf("-") + 1) + "value").innerText = this.value;
+    if (this.id.substring(this.id.indexOf("-") + 1, this.id.lastIndexOf("-")) == "close") {
+        raveRpmClose = parseInt(this.value)
+    } else if (this.id.substring(this.id.indexOf("-") + 1, this.id.lastIndexOf("-")) == "open") {
+        raveRpmOpen = parseInt(this.value)
+    }
 
-slider.oninput = function() {
-    if (timerID) clearTimeout(timerID)
-    valueDisplay.innerText = this.value;
-    timerID = setTimeout(() => {
-        setRpm()
-    }, 200)
-    /*
-    var req = new XMLHttpRequest();
-    req.open('GET', `${window.location.hostname}/rpm?RPM=${this.value}`, true);
-    req.send();
-    */
-};
+    let min = parseInt(this.min)
+    let max = parseInt(this.max)
+    let range = (max - min) / 4
+
+    this.style.setProperty('--thumb-color', ((min + range > this.value) || (max - range < this.value)) ? '#f44336' : '#4CAF50');
+}
+
 
 function updateGauge(rpm) {
     const maxRpm = 15000; // Maximum RPM value

@@ -20,15 +20,19 @@ body {
 .panel {
     position: absolute;
     display: grid;
-    grid-gap: 3em;
+    gap: 8vh;
     justify-items: center;
 }
 
 .toggle-container {
     all: unset; /* Removes all default styling on the div */
     display: inherit;
-    grid-gap: 1em;
+    gap: 1vh;
     justify-items: inherit;
+}
+
+#rave-settings {
+    gap: 3vh;
 }
 
 .user-settings {
@@ -167,6 +171,11 @@ h1 {
     display: flex;
     flex-direction: column; /* Stack content vertically */
     align-items: center; /* Center horizontally */
+}
+
+.text-popup {
+    margin-top: 3vh;
+    margin-bottom: 3vh;
 }
 
 .close {
@@ -315,4 +324,35 @@ input[type="text"]:valid:focus {
 /* Show dropdown options when dropdown is open */
 .custom-dropdown.open .dropdown-options {
   display: block;
+}
+
+
+
+
+
+
+
+.rpm-slider {
+    width: 100%;
+    min-width: 180px;
+    appearance: none;
+    height: 2vw;
+    max-height: 2vh;
+    background: #A0A0A0;
+    outline: none;
+    opacity: 0.7;
+    transition: opacity .15s ease-in-out;
+    border-radius: 5px;
+}
+
+.rpm-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 2vh;
+    min-width: 2vw;
+    aspect-ratio: 1;
+    background-color: var(--thumb-color, #000000); 
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color .15s ease-in-out;
 }

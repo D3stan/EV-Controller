@@ -146,8 +146,8 @@ void initWebServer() {
     } else {
         server.on("/", onRootRequest);
     }
-    server.onNotFound(notFound);
 
+    server.onNotFound(notFound);
     server.begin();
     ArduinoOTA.begin();
 }

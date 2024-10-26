@@ -1,9 +1,12 @@
 {
-    "wifi-mode": 2,
-    "wifi-psw": "password",
-    "wifi-ssid": "wifissid",
-    "ap-psw": "password",
-    "ap-ssid": "apssid",
-    "rave-rpm-open": 9000,
-    "rave-rpm-close": 4000
+    "wifiMode": 2,
+    "wifiPsw": "password",
+    "wifiSsid": "wifissid",
+    "apPsw": "password",
+    "apSsid": "apssid",
+    "raveRpmOpen": 9000,
+    "raveRpmClose": 4000,
+    "fwid": "FW_1_0_0",
+    "fsid": "FS_1_0_0",
+    "hwid": "abc123"
 }
