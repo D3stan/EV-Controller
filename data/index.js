@@ -232,6 +232,7 @@ function updateSettings() {
     if (raveSettings.style.display !== "none") {
         // rave settings active
         toSend = JSON.stringify({
+            type: "rave-settings",
             raveRpmOpen: raveRpmOpen,
             raveRpmClose: raveRpmClose
         })
@@ -262,6 +263,7 @@ function updateSettings() {
         apSSID = apPswInput.value
 
         toSend = JSON.stringify({
+            type: "rave-settings",
             wifiPsw: wifiPSW,
             wifiSsid: wifiSSID,
             apPsw: apPSW,
@@ -275,11 +277,6 @@ function updateSettings() {
     }
 
 
-    
-    toSend = JSON.stringify({
-        wifiPSW: wifiPSW,
-        wifiSSID: wifiSSID
-    })
     websocket.send(toSend)
     console.log(toSend)
 }
@@ -325,7 +322,7 @@ function restartForUpdate() {
     }
 
     let toSend = JSON.stringify({
-        update: true,
+        type: "update",
         wifiPsw: wifiPSW,
         wifiSsid: wifiSSID
     })
