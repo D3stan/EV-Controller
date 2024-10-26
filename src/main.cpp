@@ -1,11 +1,20 @@
 // #include <ArduinoOTA.h>
-#include <ArduinoJson.h>
 
-#include <ESP8266WiFi.h>
+#if defined(ESP8266)
+    #include <ESP8266WiFi.h>
+    #include <ESP8266HTTPClient.h>
+    #include <ESP8266httpUpdate.h>
+#elif defined(ESP32)
+    #include <WiFi.h>
+    #include <HTTPClient.h>
+#else
+#error "Only ESP8266 or ESP32"
+#endif
+
+
+#include <ArduinoJson.h>
 #include <ESPAsyncTCP.h>
 #include <ESPAsyncWebServer.h>
-#include <ESP8266HTTPClient.h>
-#include <ESP8266httpUpdate.h>
 #include <WiFiClientSecure.h>
 
 #include <Ticker.h>
@@ -52,7 +61,10 @@ AsyncWebSocket ws("/ws");
 
 // Update
 String hwid = "Error";
-X509List cert(IRG_Root_X1);
+
+#if defined(ESP8266)
+    X509List cert(IRG_Root_X1);
+#endif
 
 
 // ----------------------------------------------------------------------------
@@ -145,8 +157,11 @@ void checkForUpdate(bool firstTime = true) {
     WiFiClientSecure wifiClient;
     HTTPClient httpClient;
 
-    // wifiClient.setInsecure();
-    wifiClient.setTrustAnchors(&cert);
+    #if defined(ESP8266)
+        wifiClient.setTrustAnchors(&cert);
+    #elif defined(ESP32)
+        wifiClient.setCACert(IRG_Root_X1);
+    #endif
 
     // HTTPupdate class does this automatically if we pass the wificlient
     // in this case we are passing it the http client so

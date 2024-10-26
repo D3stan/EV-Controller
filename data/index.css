@@ -356,3 +356,18 @@ input[type="text"]:valid:focus {
     cursor: pointer;
     transition: background-color .15s ease-in-out;
 }
+
+
+
+@keyframes smoothRotate {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(180deg);
+    }
+}
+  
+.rotate {
+  animation: smoothRotate 1s ease-in-out;
+}

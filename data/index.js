@@ -214,6 +214,14 @@ function updateAllDialogFields() {
 }
 
 function openSettings() {
+    settingsButton.classList.remove('rotate');
+    settingsButton.classList.add('rotate');
+
+    if (timerID) clearTimeout(timerID)
+    timerID = setTimeout(() => {
+        settingsButton.classList.remove('rotate');
+    }, 1500)
+
     if (statusPageActive) {
         statusPage.style.display = "none"
         settingsPage.removeAttribute("style")
@@ -224,6 +232,7 @@ function openSettings() {
         statusPageActive = true
     }
     
+
 }
 
 function updateSettings() {
