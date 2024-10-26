@@ -351,6 +351,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
 
 
         serializeJson(config, configFile);
+        configFile.close();
         updateGlobals();
         if (toRestart) ESP.restart();
 
@@ -430,13 +431,15 @@ void initFS() {
         Serial.println(err.c_str());
         return;
     }
-
     configFile.close();
+
     LittleFS.remove(configFileLocation);
     configFile = LittleFS.open(configFileLocation, "w");
     config["hwid"] = hwid;
     config["fwid"] = fw_version;
 
+    serializeJson(config, configFile);
+    configFile.close();
     updateGlobals();
 
 }
