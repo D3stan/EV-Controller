@@ -4,6 +4,7 @@
     #include <ESP8266WiFi.h>
     #include <ESP8266HTTPClient.h>
     #include <ESP8266httpUpdate.h>
+    #include <ESPAsyncTCP.h>
 #elif defined(ESP32)
     #include <WiFi.h>
     #include <HTTPClient.h>
@@ -13,7 +14,7 @@
 
 
 #include <ArduinoJson.h>
-#include <ESPAsyncTCP.h>
+
 #include <ESPAsyncWebServer.h>
 #include <WiFiClientSecure.h>
 
