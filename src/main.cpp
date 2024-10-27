@@ -47,6 +47,8 @@ struct Config {
     String hwid;
     String fw_version;
     String fs_version;
+
+    String lastError;
 };
 
 Config config;
@@ -202,10 +204,14 @@ void checkForUpdate(bool firstTime = true) {
     t_httpUpdate_return ret = firstTime ? myESPhttpUpdate.update(httpClient) : myESPhttpUpdate.updateFS(httpClient);
 
     if (ret == HTTP_UPDATE_FAILED) {
-        Serial.printf("HTTP_UPDATE_FAILED Error (%d): %s\n", myESPhttpUpdate.getLastError(), myESPhttpUpdate.getLastErrorString().c_str());\
-        // wifiMode = WIFI_AP 
-        // reboot with error message
-
+        Serial.printf("HTTP_UPDATE_FAILED Error (%d): %s\n", myESPhttpUpdate.getLastError(), myESPhttpUpdate.getLastErrorString().c_str());
+        char* err;
+        sprintf(err, "Update Failed: %s", myESPhttpUpdate.getLastErrorString().c_str());
+        config.lastError = err;
+        config.wifiMode = WIFI_AP;
+        saveConfiguration(CONFIG_FILE_PATH, config);
+        delay(1500);
+        ESP.restart();
 
     } else {
         if (ret == HTTP_UPDATE_NO_UPDATES) {
@@ -369,7 +375,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
         boolean toRestart = false;
         if (!strcmp(dataType, "update")) {
             // start update process
-            config.wifiMode = 1;
+            config.wifiMode = WIFI_STA;
             toRestart = true;
 
         } else if (!strcmp(dataType, "rave-settings")) {
@@ -470,10 +476,10 @@ void loadConfiguration(const char* filePath, Config& config) {
     config.fs_version   = doc["fsid"].as<const char*>();
     config.raveRpmOpen  = doc["raveRpmOpen"];
     config.raveRpmClose = doc["raveRpmClose"];
+    config.lastError    = doc["lastError"].as<const char*>();
     
     doc.clear();
     configFile.close();
-    Serial.println(config.fs_version);
 }
 
 void saveConfiguration(const char* filePath, const Config& config) {
@@ -491,7 +497,6 @@ void saveConfiguration(const char* filePath, const Config& config) {
     doc["hwid"] = config.hwid;
     doc["fwid"] = fw_version;
 
-    Serial.println(config.fs_version);
     // NEVER modified
     doc["fsid"] = config.fs_version;
 
@@ -504,6 +509,7 @@ void saveConfiguration(const char* filePath, const Config& config) {
     doc["raveRpmOpen"] = config.raveRpmOpen;
     doc["raveRpmClose"] = config.raveRpmClose;
     
+    doc["lastError"] = config.lastError;
 
     serializeJson(doc, configFile);
     configFile.close();

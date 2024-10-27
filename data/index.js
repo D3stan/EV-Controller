@@ -295,7 +295,7 @@ function retrieveConfigValues() {
     fetch(`/config.json`, { method: "GET" })
     .then(async res => {
         let config = await res.json()
-        console.log(config)
+        
         raveRpmClose = config.raveRpmClose
         raveRpmOpen = config.raveRpmOpen
         
@@ -307,8 +307,12 @@ function retrieveConfigValues() {
         fwid = config.fwid.substring(config.fwid.indexOf("_") + 1).replaceAll("_", ".")
         fsid = config.fsid.substring(config.fsid.indexOf("_") + 1).replaceAll("_", ".")
         hwid = config.hwid
-
+        
         updateAllDialogFields()
+        if (config.lastError != "") {
+            alert(config.lastError)
+        }
+
         /*
         fwidText.innerText = config.fwid
         fsidText.innerText = config.fsid
