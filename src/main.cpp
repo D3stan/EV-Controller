@@ -18,12 +18,12 @@
 
 
 #include <ArduinoJson.h>
+#include <Ticker.h>
+#include <LittleFS.h>
 
 #include <ESPAsyncWebServer.h>
 #include <WiFiClientSecure.h>
-
-#include <Ticker.h>
-#include <LittleFS.h>
+#include <DNSServer.h>
 
 #include "notfound.h"
 #include "vars.h"
@@ -70,6 +70,7 @@ unsigned long displayMillis = 0;
 // WebServer
 AsyncWebServer server(HTTP_SERVER_PORT);
 AsyncWebSocket ws("/ws");
+DNSServer dnsServer;
 
 #if defined(ESP8266)
     X509List cert(IRG_Root_X1);
@@ -205,7 +206,7 @@ void checkForUpdate(bool firstTime = true) {
 
     if (ret == HTTP_UPDATE_FAILED) {
         Serial.printf("HTTP_UPDATE_FAILED Error (%d): %s\n", myESPhttpUpdate.getLastError(), myESPhttpUpdate.getLastErrorString().c_str());
-        char* err;
+        char err[100];
         sprintf(err, "Update Failed: %s", myESPhttpUpdate.getLastErrorString().c_str());
         config.lastError = err;
         config.wifiMode = WIFI_AP;
@@ -280,10 +281,9 @@ void initWiFi() {
 
         Serial.printf("%s\n", WiFi.softAPIP().toString().c_str());
 
-        if (!MDNS.begin(device)) {
-            Serial.println("Error setting up MDNS responder!");
-        }
-        MDNS.addService("http", "tcp", 80);
+        dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
+        dnsServer.start(DNS_PORT, "*", AP_IP);
+        
     
     } else if (config.wifiMode == WIFI_STA) {
         WiFi.mode(WIFI_STA);
@@ -299,6 +299,8 @@ void initWiFi() {
         Serial.printf(" %s\n", WiFi.localIP().toString().c_str());
         syncTime();
         checkForUpdate();
+
+        
     }
 }
 
@@ -311,9 +313,9 @@ void onRootRequest(AsyncWebServerRequest *request) {
 
     if (!FSmounted) {
         errorMsg = "Error: filesystem not mounted correctly";
-    } /*else if (config.isNull()) {
+    } else if (!config.wifiMode) {
         errorMsg = "Error: cannot parse config file";
-    }*/
+    }
 
     errorReplacementPage = index_html;
     errorReplacementPage.replace(errorPlaceHolder, errorMsg);
@@ -337,7 +339,22 @@ void initWebServer() {
 
     server.onNotFound(notFound);
     server.begin();
+
+    if (!MDNS.begin(device)) {
+        Serial.println("Error setting up MDNS responder!");
+    }
+    MDNS.addService("http", "tcp", 80);
+
     // ArduinoOTA.begin();
+}
+
+void handlehostname() {
+    if (config.wifiMode == WIFI_AP) {
+        dnsServer.processNextRequest();
+        MDNS.update();
+    } else {
+        MDNS.update();
+    }
 }
 
 // ----------------------------------------------------------------------------
@@ -565,5 +582,7 @@ void loop() {
     // ArduinoOTA.handle();
     onboard_led.update();
     ws.cleanupClients();
-    MDNS.update();
+    
+    handlehostname();
+    
 }
