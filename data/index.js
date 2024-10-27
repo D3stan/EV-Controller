@@ -295,7 +295,7 @@ function retrieveConfigValues() {
     fetch(`/config.json`, { method: "GET" })
     .then(async res => {
         let config = await res.json()
-
+        console.log(config)
         raveRpmClose = config.raveRpmClose
         raveRpmOpen = config.raveRpmOpen
         

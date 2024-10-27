@@ -10,7 +10,7 @@
 // Device infos
 const char* fw_version = "FW_1_0_2";
 const char* fs_version = "FS_1_0_0";        // unused
-const char* device = "rave-controller";
+const char* device = "rave-controller";     // also used for mdns
 const char* platform = "d1_mini";
 
 // Server

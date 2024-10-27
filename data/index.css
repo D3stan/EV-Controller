@@ -10,9 +10,9 @@ html, body {
   overflow: auto;
 }
 body {
+    position: relative;
   /**/display: grid;
-  align-items: center;
-  justify-items: center;
+  place-items: center;
   height: 100vh; /* Full viewport height */
   margin: 0;
 }

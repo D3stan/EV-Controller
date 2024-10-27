@@ -5,9 +5,13 @@
     #include <ESP8266HTTPClient.h>
     #include <ESP8266httpUpdate.h>
     #include <ESPAsyncTCP.h>
+    #include <ESP8266mDNS.h>
 #elif defined(ESP32)
     #include <WiFi.h>
     #include <HTTPClient.h>
+    #include <HTTPUpdate.h>
+    #include <AsyncTCP.h>
+    #include <ESPmDNS.h>
 #else
 #error "Only ESP8266 or ESP32"
 #endif
@@ -41,8 +45,8 @@ struct Config {
     String AP_PASS;
 
     String hwid;
-    const char* fw_version;
-    const char* fs_version;
+    String fw_version;
+    String fs_version;
 };
 
 Config config;
@@ -269,6 +273,11 @@ void initWiFi() {
         WiFi.softAP(config.AP_SSID.c_str(), config.AP_PASS.c_str());
 
         Serial.printf("%s\n", WiFi.softAPIP().toString().c_str());
+
+        if (!MDNS.begin(device)) {
+            Serial.println("Error setting up MDNS responder!");
+        }
+        MDNS.addService("http", "tcp", 80);
     
     } else if (config.wifiMode == WIFI_STA) {
         WiFi.mode(WIFI_STA);
@@ -382,6 +391,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
 
         // Sovrascrivo il vecchio config
         saveConfiguration(CONFIG_FILE_PATH, config);
+        json.clear();
         JsonDocument doc;
         char data[30];
         
@@ -389,12 +399,14 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
             doc["update"] = "restarting";
             size_t len = serializeJson(doc, data);
             ws.textAll(data, len);
+            doc.clear();
             delay(1500);
             ESP.restart();
         } else {
             doc["update"] = "updated";
             size_t len = serializeJson(doc, data);
             ws.textAll(data, len);
+            doc.clear();
         }
     }
 }
@@ -447,8 +459,7 @@ void loadConfiguration(const char* filePath, Config& config) {
         Serial.println(err.c_str());
         return;
     }
-    configFile.close();
-
+    
     serializeJsonPretty(doc, Serial);
     config.wifiMode     = doc["wifiMode"];
     config.WIFI_PASS    = doc["wifiPsw"].as<const char*>();
@@ -460,7 +471,9 @@ void loadConfiguration(const char* filePath, Config& config) {
     config.raveRpmOpen  = doc["raveRpmOpen"];
     config.raveRpmClose = doc["raveRpmClose"];
     
-    
+    doc.clear();
+    configFile.close();
+    Serial.println(config.fs_version);
 }
 
 void saveConfiguration(const char* filePath, const Config& config) {
@@ -478,10 +491,11 @@ void saveConfiguration(const char* filePath, const Config& config) {
     doc["hwid"] = config.hwid;
     doc["fwid"] = fw_version;
 
-    // NEVER written
-    // doc["fsid"] = config
+    Serial.println(config.fs_version);
+    // NEVER modified
+    doc["fsid"] = config.fs_version;
 
-    // Read and writted
+    // Read (modified) and writted
     doc["wifiMode"] = config.wifiMode;
     doc["wifiPsw"] = config.WIFI_PASS;
     doc["wifiSsid"] = config.WIFI_SSID;
@@ -493,6 +507,7 @@ void saveConfiguration(const char* filePath, const Config& config) {
 
     serializeJson(doc, configFile);
     configFile.close();
+    doc.clear();
 }
 
 void initFS() {
@@ -544,4 +559,5 @@ void loop() {
     // ArduinoOTA.handle();
     onboard_led.update();
     ws.cleanupClients();
+    MDNS.update();
 }
