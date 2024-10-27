@@ -5,6 +5,7 @@
 #define BTN_PIN      5 
 #define INDUCTIVE_IN 4
 #define HTTP_SERVER_PORT    80
+#define CONFIG_FILE_PATH "/config.json"
 
 // Programm
 const char* configFileLocation = "/config.json";

@@ -30,7 +30,6 @@
 // ----------------------------------------------------------------------------
 
 // FS globals
-File configFile;
 JsonDocument config;
 bool FSmounted = false;
 
@@ -252,6 +251,8 @@ IRAM_ATTR void signalDetected() {
 
 void initWiFi() {
     if (wifiMode == WIFI_AP) {
+        Serial.println("Starting AP");
+        Serial.println(AP_PASS);
         WiFi.mode(WIFI_AP);
         WiFi.softAPConfig(AP_IP, AP_IP, IPAddress(255, 255, 255, 0));
         WiFi.softAP(AP_SSID, AP_PASS);
@@ -284,14 +285,14 @@ void onRootRequest(AsyncWebServerRequest *request) {
     errorReplacementPage = index_html;
     errorReplacementPage.replace(errorPlaceHolder, errorMsg);
     errorReplacementPage.replace(errorCodePlaceHolder, "500");
-    request->send_P(500, "text/html", index_html);
+    request->send(500, "text/html", errorReplacementPage);
 }
 
 void notFound(AsyncWebServerRequest *request) {
     errorReplacementPage = index_html;
     errorReplacementPage.replace(errorPlaceHolder, "Error: Page Not Found");
     errorReplacementPage.replace(errorCodePlaceHolder, "404");
-    request->send(404, "text/html", index_html);
+    request->send(404, "text/html", errorReplacementPage);
 }
 
 void initWebServer() {
@@ -326,48 +327,52 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
 
         JsonDocument json;
         DeserializationError err = deserializeJson(json, data);
+        
         if (err) {
             Serial.print(F("deserializeJson() failed with code "));
             Serial.println(err.c_str());
             return;
         }
 
-        if (json["type"].isNull()) {
+        Serial.println("Here");
+        const char* dataType = json["type"].as<const char*>();
+
+        if (!dataType) {
             Serial.println("Cannot resolve data type");
             return;
         }
+        
 
-        LittleFS.remove(configFileLocation);
-        configFile = LittleFS.open(configFileLocation, "w");
-
-        const char* dataType = json["type"];
+        LittleFS.remove(CONFIG_FILE_PATH);
+        File configFile = LittleFS.open(CONFIG_FILE_PATH, "w");
         boolean toRestart = false;
-        if (strcmp(dataType, "update")) {
+        
+        if (!strcmp(dataType, "update")) {
             // start update process
             config["wifiMode"] = "1";
             toRestart = true;
 
-        } else if (strcmp(dataType, "rave-settings")) {
+        } else if (!strcmp(dataType, "rave-settings")) {
             // update rave settings
-            config["raveRpmOpen"] = json["raveRpmOpen"];
-            config["raveRpmClose"] = json["raveRpmClose"];
+            config["raveRpmOpen"] = json["raveRpmOpen"].as<const char*>();
+            config["raveRpmClose"] = json["raveRpmClose"].as<const char*>();
 
-        } else if (strcmp(dataType, "wifi-settings")) {
+        } else if (!strcmp(dataType, "wifi-settings")) {
             // update wifi settings
-            config["wifiPsw"] = json["wifiPsw"];
-            config["wifiSsid"] = json["wifiSsid"];
-            config["apPsw"] = json["apPsw"];
-            config["apSsid"] = json["apSsid"];
+            config["wifiPsw"] = json["wifiPsw"].as<const char*>();
+            config["wifiSsid"] = json["wifiSsid"].as<const char*>();
+            config["apPsw"] = json["apPsw"].as<const char*>();
+            config["apSsid"] = json["apSsid"].as<const char*>();
 
         } else {
             Serial.println("Unknown data type");
             
         }
 
-
+        
         serializeJson(config, configFile);
         configFile.close();
-        updateGlobals();
+        // updateGlobals();        // crashes because of this
         if (toRestart) ESP.restart();
 
         /*
@@ -414,14 +419,14 @@ void initWebSocket() {
 // ----------------------------------------------------------------------------
 
 void updateGlobals() {
-    wifiMode = atoi(config["wifi-mode"]);
-    WIFI_PASS = config["wifi-psw"];
-    WIFI_SSID = config["wifi-ssid"];
-    AP_SSID = config["ap-ssid"];
-    AP_PASS = config["ap-psw"];
-    fs_version = config["fsid"];
-    raveRpmOpen = atoi(config["rave-rpm-open"]);
-    raveRpmClose = atoi(config["rave-rpm-close"]);
+    wifiMode = atoi(config["wifiMode"].as<const char*>()) | WIFI_AP;
+    WIFI_PASS = config["wifiPsw"] | "";
+    WIFI_SSID = config["wifiSsid"] | "";
+    AP_SSID = config["apSsid"] | "";
+    AP_PASS = config["apPsw"] | "";
+    fs_version = config["fsid"] | "";
+    raveRpmOpen = atoi(config["raveRpmOpen"].as<const char*>()) | 9000;
+    raveRpmClose = atoi(config["raveRpmClose"].as<const char*>()) | 3000;
 }
 
 void initFS() {
@@ -432,29 +437,30 @@ void initFS() {
     }
 
     FSmounted = true;
-    configFile = LittleFS.open(configFileLocation, "r");
+    File configFile = LittleFS.open(CONFIG_FILE_PATH, "r");
     if (!configFile) {
         Serial.println("Error reading config file");
         FSmounted = false;
         return;
     }
-
     
     DeserializationError err = deserializeJson(config, configFile);
+    const char* ssid = config["apSsid"] | "lol";
+    Serial.printf("\nSSID: %s\n", ssid);
     if (err) {
         Serial.print(F("deserializeJson() failed with code "));
         Serial.println(err.c_str());
-        return;
     }
     configFile.close();
-
-    LittleFS.remove(configFileLocation);
-    configFile = LittleFS.open(configFileLocation, "w");
+    
+    LittleFS.remove(CONFIG_FILE_PATH);
+    configFile = LittleFS.open(CONFIG_FILE_PATH, "w");
     config["hwid"] = hwid;
     config["fwid"] = fw_version;
 
     serializeJson(config, configFile);
     configFile.close();
+    
     updateGlobals();
 
 }
@@ -474,8 +480,12 @@ void initGPIO() {
 
 void setup() {
     initGPIO();
-    initFS();
+    for (int i = 0; i < 5; i++) {
+        Serial.printf("\n.");
+        delay(1000);
+    }
     initHwid();
+    initFS();
     initWiFi();
     initWebSocket();
     initWebServer();

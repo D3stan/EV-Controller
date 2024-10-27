@@ -144,7 +144,7 @@ function onLoad(event) {
 
 
     retrieveConfigValues()
-    updateAllDialogFields()
+    
 }
 
 // ----------------------------------------------------------------------------
@@ -214,7 +214,6 @@ function updateAllDialogFields() {
 }
 
 function openSettings() {
-    settingsButton.classList.remove('rotate');
     settingsButton.classList.add('rotate');
 
     if (timerID) clearTimeout(timerID)
@@ -272,7 +271,7 @@ function updateSettings() {
         apSSID = apPswInput.value
 
         toSend = JSON.stringify({
-            type: "rave-settings",
+            type: "wifi-settings",
             wifiPsw: wifiPSW,
             wifiSsid: wifiSSID,
             apPsw: apPSW,
@@ -291,21 +290,32 @@ function updateSettings() {
 }
 
 function retrieveConfigValues() {
-    fetch(`${window.location.hostname}/config.json`, { method: "GET" })
+    fetch(`/config.json`, { method: "GET" })
     .then(async res => {
         let config = await res.json()
-        config = JSON.parse(config)
 
         raveRpmClose = config.raveRpmClose
         raveRpmOpen = config.raveRpmOpen
+        
         wifiPSW = config.wifiPsw
         wifiSSID = config.wifiSsid
         apPSW = config.apPsw
         apSSID = config.apSsid
-        fwid = config.fwid
-        fsid = config.fsid
+
+        fwid = config.fwid.substring(config.fwid.indexOf("_") + 1).replaceAll("_", ".")
+        fsid = config.fsid.substring(config.fsid.indexOf("_") + 1).replaceAll("_", ".")
         hwid = config.hwid
 
+        updateAllDialogFields()
+        /*
+        fwidText.innerText = config.fwid
+        fsidText.innerText = config.fsid
+        hwidText.innerText = config.hwid
+        wifiSsidInput.value = config.wifiSsid
+        wifiPswInput.value = config.wifiPsw
+        apSsidInput.value = config.apSsid
+        apPswInput.value = config.apPsw
+        */
     })
     .catch(err => console.log(`Error when retrieving config values: ${err}`))
 }
