@@ -1,11 +1,11 @@
 {
-    "wifiMode": "2",
+    "wifiMode": 2,
     "wifiPsw": "password",
     "wifiSsid": "Infostrada-2.4GHz-982BCB",
     "apPsw": "ciaociao",
     "apSsid": "qs",
-    "raveRpmOpen": "9000",
-    "raveRpmClose": "4000",
+    "raveRpmOpen": 9000,
+    "raveRpmClose": 4000,
     "fwid": "FW_1_0_0",
     "fsid": "FS_1_0_0",
     "hwid": "abc123"

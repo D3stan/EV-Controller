@@ -174,13 +174,14 @@ function onClose(event) {
 
 function onMessage(event) {
     let data = JSON.parse(event.data);
-    if (data.update == 1) {
-        // settings update
-        wifiPSW = data.wifiPSW
-        wifiSSID = data.wifiSSID
-        raveRpmClose = data.raveRpmClose
-        raveRpmOpen = data.raveRpmOpen
-
+    if (data.update) {
+        if (data.update == "updated") {
+            // settings updated successfully
+            alert("Settings Updated")
+        } else {
+            // checking for updates
+            alert("Rebooting...")
+        }
     } else {
         if (data.rpm) {
             updateGauge(data.rpm);
@@ -210,7 +211,10 @@ function updateAllDialogFields() {
     wifiSsidInput.value   =  wifiSSID
     wifiPswInput.value    =  wifiPSW 
     apSsidInput.value     =  apSSID
-    apPswInput.value      =  apPSW   
+    apPswInput.value      =  apPSW
+
+    rpmOpenText = raveRpmOpen.toString()
+    rpmCloseText = raveRpmClose.toString()
 }
 
 function openSettings() {
@@ -250,22 +254,20 @@ function updateSettings() {
     } else if (wifiSettings.style.display !== "none") {
         // wifi settings active
         if (
-            wifiSsidInput.value.length < 8 ||
-            wifiPswInput.value < 8 ||
-            apSsidInput.value < 8 ||
-            apPswInput.value < 8
+            wifiPswInput.value.length < 8 ||
+            apPswInput.value.length < 8
         ) {
             let content = updateSettingsButton.innerText
             updateSettingsButton.innerText = "Error"
             setTimeout(() => {
                 updateSettingsButton.innerText = content
             }, 5000)
-            alert("Input must be at least 8 characters long!")
+            alert("Input password must be at least 8 characters long!")
             return
         }
         
-        wifiPSW = wifiSsidInput.value
-        wifiSSID = wifiPswInput.value
+        wifiSSID = wifiSsidInput.value
+        wifiPSW = wifiPswInput.value
 
         apPSW = apSsidInput.value
         apSSID = apPswInput.value

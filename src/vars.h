@@ -7,12 +7,9 @@
 #define HTTP_SERVER_PORT    80
 #define CONFIG_FILE_PATH "/config.json"
 
-// Programm
-const char* configFileLocation = "/config.json";
-
 // Device infos
 const char* fw_version = "FW_1_0_2";
-const char* fs_version = "FS_1_0_0";
+const char* fs_version = "FS_1_0_0";        // unused
 const char* device = "rave-controller";
 const char* platform = "d1_mini";
 
