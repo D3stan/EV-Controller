@@ -310,7 +310,12 @@ function retrieveConfigValues() {
         
         updateAllDialogFields()
         if (config.lastError != "") {
-            alert(config.lastError)
+            if (confirm(config.lastError)) {
+                let toSend = JSON.stringify({
+                    type: "reser-error"
+                })
+                websocket.send(toSend)
+            }
         }
 
         /*

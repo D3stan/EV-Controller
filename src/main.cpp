@@ -192,6 +192,9 @@ void checkForUpdate(bool firstTime = true) {
     httpClient.addHeader("mode", firstTime ? "firmware" : "filesystem");
     
     ESP8266HTTPUpdate myESPhttpUpdate;
+
+    // Remove automatic reboot
+    myESPhttpUpdate.rebootOnUpdate(false);
     // Add optional led flashing
     myESPhttpUpdate.setLedPin(LED_BUILTIN, LOW);
 
@@ -226,7 +229,12 @@ void checkForUpdate(bool firstTime = true) {
             wifiClient.stop();
             checkForUpdate(false);
         }
-        else ESP.restart();
+        else {
+            config.wifiMode = WIFI_AP;
+            saveConfiguration(CONFIG_FILE_PATH, config);
+            delay(1500);
+            ESP.restart();
+        }
     }
 
 }
@@ -290,9 +298,17 @@ void initWiFi() {
         WiFi.begin(config.WIFI_SSID, config.WIFI_PASS);
 
         // Wait for WiFi connection
-        while (WiFi.status() != WL_CONNECTED) {
-          delay(500);
-          Serial.print(".");
+        for (int i = 0; WiFi.status() != WL_CONNECTED; i++) {
+            delay(500);
+            Serial.print(".");
+
+            if (i >= 40) {
+                config.wifiMode = WIFI_AP;
+                config.lastError = "Incorrect WiFi password!";
+                saveConfiguration(CONFIG_FILE_PATH, config);
+                delay(1500);
+                ESP.restart();
+            }
         }
         Serial.println("\nWiFi connected");
 
@@ -407,6 +423,9 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
             config.AP_PASS = json["apPsw"].as<String>();
             config.AP_SSID = json["apSsid"].as<String>();
 
+        } else if (!strcmp(dataType, "reset-error")) {
+            config.lastError = "";
+
         } else {
             Serial.println("Unknown data type");
             
@@ -423,7 +442,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
             size_t len = serializeJson(doc, data);
             ws.textAll(data, len);
             doc.clear();
-            delay(1500);
+            delay(5000);
             ESP.restart();
         } else {
             doc["update"] = "updated";
