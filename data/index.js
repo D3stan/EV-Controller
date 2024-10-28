@@ -312,7 +312,7 @@ function retrieveConfigValues() {
         if (config.lastError != "") {
             if (confirm(config.lastError)) {
                 let toSend = JSON.stringify({
-                    type: "reser-error"
+                    type: "reset-error"
                 })
                 websocket.send(toSend)
             }

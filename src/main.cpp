@@ -52,6 +52,7 @@ struct Config {
 };
 
 Config config;
+Ticker restartTimer;
 
 // FS globals
 bool FSmounted = false;
@@ -65,7 +66,6 @@ unsigned long RPM = 0;
 unsigned long currentMicros = 0;
 unsigned long lastMicros = 0;
 unsigned long displayMillis = 0;
-
 
 // WebServer
 AsyncWebServer server(HTTP_SERVER_PORT);
@@ -100,7 +100,6 @@ Led    onboard_led = { LED_BUILTIN, true };
 // Remote Update Utils
 // ----------------------------------------------------------------------------
 
-void updateGlobals(JsonDocument config);
 void loadConfiguration(const char* filePath, Config& config);
 void saveConfiguration(const char* filePath, const Config& config);
 
@@ -405,7 +404,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
             return;
         }
         
-        boolean toRestart = false;
+        boolean toRestart = false, settingsUpdate = false;
         if (!strcmp(dataType, "update")) {
             // start update process
             config.wifiMode = WIFI_STA;
@@ -415,6 +414,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
             // update rave settings
             config.raveRpmOpen = json["raveRpmOpen"];
             config.raveRpmClose = json["raveRpmClose"];
+            settingsUpdate = true;
 
         } else if (!strcmp(dataType, "wifi-settings")) {
             // update wifi settings
@@ -422,6 +422,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
             config.WIFI_SSID = json["wifiSsid"].as<String>();
             config.AP_PASS = json["apPsw"].as<String>();
             config.AP_SSID = json["apSsid"].as<String>();
+            settingsUpdate = true;
 
         } else if (!strcmp(dataType, "reset-error")) {
             config.lastError = "";
@@ -435,16 +436,15 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
         saveConfiguration(CONFIG_FILE_PATH, config);
         json.clear();
         JsonDocument doc;
-        char data[30];
+        char data[60];
         
         if (toRestart) {
             doc["update"] = "restarting";
             size_t len = serializeJson(doc, data);
             ws.textAll(data, len);
             doc.clear();
-            delay(5000);
-            ESP.restart();
-        } else {
+            restartTimer.once(2, []() {ESP.restart();});
+        } else if (settingsUpdate) {
             doc["update"] = "updated";
             size_t len = serializeJson(doc, data);
             ws.textAll(data, len);
