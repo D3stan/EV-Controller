@@ -12,8 +12,8 @@
 */
 
 extern const int my_led_pin;
-extern const int my_btn_pin;
-extern const int my_inductive_in;
+extern const int valveOut;
+extern const int inductiveIn;
 extern const int my_http_server_port;
 extern const int my_dns_port;
 extern const char* config_file_path;

@@ -1,8 +1,8 @@
 #include "vars.h"
 
 const int my_led_pin = 15;
-const int my_btn_pin = 5;
-const int my_inductive_in = 4;
+const int valveOut = 5;
+const int inductiveIn = 4;
 const int my_http_server_port = 80;
 const int my_dns_port = 53;
 const char* config_file_path = "/config.json";
