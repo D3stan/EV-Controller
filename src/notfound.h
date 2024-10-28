@@ -1,4 +1,9 @@
-#include <Arduino.h>
+#ifndef NOTFOUND_MODULE
+#define NOTFOUND_MODULE
+
+
+// Include of commons libraries
+#include "Commons.h"
 
 const char* errorPlaceHolder = "%error-msg%";
 const char* errorCodePlaceHolder = "%error-code%";
@@ -76,3 +81,6 @@ const char index_html[] PROGMEM = R"(
 
 
 )";
+
+
+#endif

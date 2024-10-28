@@ -1,5 +1,7 @@
-#include <Arduino.h>//la donna e- bellissima
+#ifndef VARS_MODULE
+#define VARS_MODULE
 
+/*
 // Macros
 #define LED_PIN             15
 #define BTN_PIN             5 
@@ -7,13 +9,24 @@
 #define HTTP_SERVER_PORT    80
 #define DNS_PORT            53
 #define CONFIG_FILE_PATH "/config.json"
+*/
+
+extern const int my_led_pin;
+extern const int my_btn_pin;
+extern const int my_inductive_in;
+extern const int my_http_server_port;
+extern const int my_dns_port;
+extern const char* config_file_path;
+
 
 // Device infos
-const char* fw_version = "FW_1_0_2";
-const char* fs_version = "FS_1_0_0";        // unused
-const char* device = "rave-controller";     // also used for mdns
-const char* platform = "d1_mini";
+extern const char* fw_version;
+extern const char* fs_version;        // unused
+extern const char* device;     // also used for mdns
+extern const char* platform ;
 
 // Server
-uint16_t httpTimeout = 5000;
-const char* update_server_url = "https://server-updater.deno.dev/update";
+extern unsigned int httpTimeout;
+extern const char* update_server_url;
+
+#endif
