@@ -269,8 +269,8 @@ function updateSettings() {
         wifiSSID = wifiSsidInput.value
         wifiPSW = wifiPswInput.value
 
-        apPSW = apSsidInput.value
-        apSSID = apPswInput.value
+        apSSID = apSsidInput.value
+        apPSW = apPswInput.value
 
         toSend = JSON.stringify({
             type: "wifi-settings",
