@@ -4,6 +4,8 @@
 #include "webserver.h"
 #include "websocket.h"
 #include "wifi.h"
+#include "rave.h"
+#include "vars.h"
 
 // Local Modules
 // #include "vars.h" //already inside of commons
@@ -21,18 +23,13 @@ Config config;
 bool FSmounted = false;
 
 
-IPAddress AP_IP (42, 42, 42, 42);
-
 // Rpm count
 unsigned long RPM = 0;
 unsigned long currentMicros = 0;
 unsigned long lastMicros = 0;
 unsigned long displayMillis = 0;
 
-// WebServer
-AsyncWebServer server(my_http_server_port);
-AsyncWebSocket ws("/ws");
-DNSServer dnsServer;
+
 
 
 

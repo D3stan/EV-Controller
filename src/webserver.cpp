@@ -7,6 +7,9 @@
 
 // Locals
 String errorReplacementPage = index_html;
+// WebServer
+AsyncWebServer server(my_http_server_port);
+DNSServer dnsServer;
 
 
 void onRootRequest(AsyncWebServerRequest *request) {

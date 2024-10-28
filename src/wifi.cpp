@@ -4,6 +4,8 @@
 // Connecting to the WiFi network
 // ----------------------------------------------------------------------------
 
+IPAddress AP_IP(42, 42, 42, 42);
+
 void initWiFi() {
     Serial.printf("WiFi mode: %d", config.wifiMode);
 
