@@ -6,7 +6,7 @@
 #include "wifi.h"
 #include "rave.h"
 #include "vars.h"
-
+#define DEBUG_ESP_PORT Serial
 // Local Modules
 // #include "vars.h" //already inside of commons
 #include "cert.h"
@@ -18,16 +18,16 @@
 
 Config config;
 
-
-// FS globals
+bool raveOpen = false;
 bool FSmounted = false;
 
 
 // Rpm count
-unsigned long RPM = 0;
+int RPM = 0;
 unsigned long currentMicros = 0;
 unsigned long lastMicros = 0;
 unsigned long displayMillis = 0;
+unsigned long checkEngineMillis = 0;
 
 
 // ----------------------------------------------------------------------------
@@ -86,8 +86,12 @@ void initFS() {
 
 void initGPIO() {
     pinMode(onboard_led.pin, OUTPUT);
-    pinMode(my_inductive_in,      INPUT);
-    attachInterrupt(digitalPinToInterrupt(my_inductive_in), signalDetected, FALLING);
+    pinMode(valveOut, OUTPUT);
+    pinMode(inductiveIn,      INPUT);
+    attachInterrupt(digitalPinToInterrupt(inductiveIn), signalDetected, FALLING);
+
+    analogWriteRange(100);
+    analogWriteFreq(800);
 
     Serial.begin(115200);
 }
@@ -117,6 +121,10 @@ void setup() {
 void loop() {
     onboard_led.on = millis() % 1000 < 500;
     if (millis() - displayMillis >= 35) updateRPM(RPM);
+    if (millis() - checkEngineMillis >= 20) {
+        checkIfEngineRunnig();
+        setValveState();
+    }
 
     // ArduinoOTA.handle();
     onboard_led.update();

@@ -43,7 +43,7 @@ void initWebServer() {
 
     server.onNotFound(notFound);
     server.begin();
-
+    
     if (!MDNS.begin(device)) {
         Serial.println("Error setting up MDNS responder!");
     }
