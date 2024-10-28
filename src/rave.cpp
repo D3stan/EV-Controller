@@ -8,4 +8,8 @@ void updateRPM(unsigned long rpm = 0) {
     size_t len = serializeJson(json, data);
     ws.textAll(data, len);
     displayMillis = millis();
+
+    if ((displayMillis - lastMicros * 1000) >= 3 * 1000) {
+        RPM = 0;
+    }
 }
