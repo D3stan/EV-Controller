@@ -62,7 +62,7 @@ String errorReplacementPage = index_html;
 IPAddress AP_IP (42, 42, 42, 42);
 
 // Rpm count
-unsigned long RPM = 0;
+int RPM = 0;
 unsigned long currentMicros = 0;
 unsigned long lastMicros = 0;
 unsigned long displayMillis = 0;
@@ -573,11 +573,14 @@ void initFS() {
 }
 
 void initGPIO() {
-    pinMode(onboard_led.pin, OUTPUT);
-    pinMode(INDUCTIVE_IN,      INPUT);
+    pinMode(onboard_led.pin,   OUTPUT);
+    pinMode(VALVE_OUT,         OUTPUT);
+    pinMode(INDUCTIVE_IN,       INPUT);
     attachInterrupt(digitalPinToInterrupt(INDUCTIVE_IN), signalDetected, FALLING);
 
     Serial.begin(115200);
+    analogWriteRange(100);
+    analogWriteFreq(800);
 }
 
 
@@ -596,6 +599,7 @@ void checkIfEngineRunnig() {
 
 void operateValve(int outputPin, Valve mode, int peakMillis = 1000) {
     if (mode == OPEN) {
+        valveOpen = true;
         Serial.printf("\nValve opened");
         analogWrite(outputPin, 100);
         restartTimer.once_ms(peakMillis, [outputPin] {
@@ -604,8 +608,8 @@ void operateValve(int outputPin, Valve mode, int peakMillis = 1000) {
             analogWrite(outputPin, 40);
         });
     } else {
-        Serial.printf("\nValve closed");
         analogWrite(outputPin, 0);
+        valveOpen = false;
     }
 }
 
@@ -617,12 +621,15 @@ void setValveState() {
 
         if (reachedRpmOpenFirstTime && (RPM > config.raveRpmOpen || RPM < config.raveRpmClose) && !valveOpen) {
             operateValve(VALVE_OUT, OPEN);
-            valveOpen = true;
 
-        } else if (valveOpen) {
+        } else if (valveOpen && (RPM < config.raveRpmOpen && RPM > config.raveRpmClose)) {
+            Serial.printf("\nValve closed");
             operateValve(VALVE_OUT, CLOSE);
-            valveOpen = false;
+
         }
+
+    } else {
+        operateValve(VALVE_OUT, CLOSE);
     }
 }
 
@@ -649,9 +656,10 @@ void setup() {
 // ----------------------------------------------------------------------------
 
 void loop() {
-    onboard_led.on = millis() % 1000 < 500;
-    if (millis() - displayMillis >= 35) updateRPM(RPM);
-    if (millis() - checkEngineMillis >= 20) {
+    static unsigned long currentMillis = millis();
+    onboard_led.on = currentMillis % 1000 < 500;
+    if (currentMillis - displayMillis >= 35) updateRPM(RPM);
+    if (currentMillis - checkEngineMillis >= 20) {
         checkIfEngineRunnig();
         setValveState();
     }
