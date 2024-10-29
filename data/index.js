@@ -4,7 +4,7 @@ var statusPageActive = true
 var timerID
 
 var currentDegrees = 0;
-var animationSpeed = 0.05; // Adjust this value to control the speed of the gauge animation
+var animationSpeed = 0.1; // Adjust this value to control the speed of the gauge animation
 
 var raveRpmClose = 3500
 var raveRpmOpen = 11500
@@ -269,8 +269,8 @@ function updateSettings() {
         wifiSSID = wifiSsidInput.value
         wifiPSW = wifiPswInput.value
 
-        apPSW = apSsidInput.value
-        apSSID = apPswInput.value
+        apSSID = apSsidInput.value
+        apPSW = apPswInput.value
 
         toSend = JSON.stringify({
             type: "wifi-settings",
@@ -392,6 +392,7 @@ function updateRpmSliderValue() {
 
 
 function updateGauge(rpm) {
+    clearTimeout(timerID)
     const maxRpm = 15000; // Maximum RPM value
     let targetDegrees;
     
@@ -461,4 +462,8 @@ function updateGauge(rpm) {
 
     // Update the RPM text
     rpmText.textContent = rpm;
+
+    timerID = setTimeout(() => {
+        updateGauge(0)
+    }, 3000)
 }
