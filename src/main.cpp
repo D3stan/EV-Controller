@@ -67,6 +67,8 @@ unsigned long currentMicros = 0;
 unsigned long lastMicros = 0;
 unsigned long displayMillis = 0;
 
+bool valveOpen = false;
+
 // WebServer
 AsyncWebServer server(HTTP_SERVER_PORT);
 AsyncWebSocket ws("/ws");
