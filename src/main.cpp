@@ -66,8 +66,14 @@ unsigned long RPM = 0;
 unsigned long currentMicros = 0;
 unsigned long lastMicros = 0;
 unsigned long displayMillis = 0;
+unsigned long checkEngineMillis = 0;
 
 bool valveOpen = false;
+bool reachedRpmOpenFirstTime = false;
+enum Valve {
+    OPEN,
+    CLOSE
+};
 
 // WebServer
 AsyncWebServer server(HTTP_SERVER_PORT);
@@ -575,6 +581,52 @@ void initGPIO() {
 }
 
 
+
+// ----------------------------------------------------------------------------
+// Valve Functions
+// ----------------------------------------------------------------------------
+
+void checkIfEngineRunnig() {
+    if ((displayMillis - lastMicros * 1000) >= 1 * 1000) {
+        RPM = 0;
+    }
+
+    checkEngineMillis = millis();
+}
+
+void operateValve(int outputPin, Valve mode, int peakMillis = 1000) {
+    if (mode == OPEN) {
+        Serial.printf("\nValve opened");
+        analogWrite(outputPin, 100);
+        restartTimer.once_ms(peakMillis, [outputPin] {
+            // switch to hold state
+            Serial.printf("\nValve in hold");
+            analogWrite(outputPin, 40);
+        });
+    } else {
+        Serial.printf("\nValve closed");
+        analogWrite(outputPin, 0);
+    }
+}
+
+void setValveState() {
+    if (RPM > 0) {
+        if (!reachedRpmOpenFirstTime && RPM > config.raveRpmOpen) {
+            reachedRpmOpenFirstTime = true;
+        }
+
+        if (reachedRpmOpenFirstTime && (RPM > config.raveRpmOpen || RPM < config.raveRpmClose) && !valveOpen) {
+            operateValve(VALVE_OUT, OPEN);
+            valveOpen = true;
+
+        } else if (valveOpen) {
+            operateValve(VALVE_OUT, CLOSE);
+            valveOpen = false;
+        }
+    }
+}
+
+
 // ----------------------------------------------------------------------------
 // Initialization
 // ----------------------------------------------------------------------------
@@ -599,6 +651,10 @@ void setup() {
 void loop() {
     onboard_led.on = millis() % 1000 < 500;
     if (millis() - displayMillis >= 35) updateRPM(RPM);
+    if (millis() - checkEngineMillis >= 20) {
+        checkIfEngineRunnig();
+        setValveState();
+    }
 
     // ArduinoOTA.handle();
     onboard_led.update();

@@ -2,7 +2,7 @@
 
 // Macros
 #define LED_PIN             15
-#define BTN_PIN             5 
+#define VALVE_OUT           5 
 #define INDUCTIVE_IN        4
 #define HTTP_SERVER_PORT    80
 #define DNS_PORT            53
