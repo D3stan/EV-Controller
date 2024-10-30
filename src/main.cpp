@@ -6,7 +6,6 @@
 #include "wifi.h"
 #include "rave.h"
 #include "vars.h"
-#define DEBUG_ESP_PORT Serial
 // Local Modules
 // #include "vars.h" //already inside of commons
 #include "cert.h"
@@ -24,6 +23,7 @@ bool FSmounted = false;
 
 // Rpm count
 int RPM = 0;
+unsigned long currentMillis = 0;
 unsigned long currentMicros = 0;
 unsigned long lastMicros = 0;
 unsigned long displayMillis = 0;
@@ -119,17 +119,18 @@ void setup() {
 // ----------------------------------------------------------------------------
 
 void loop() {
-    onboard_led.on = millis() % 1000 < 500;
-    if (millis() - displayMillis >= 35) updateRPM(RPM);
-    if (millis() - checkEngineMillis >= 20) {
-        checkIfEngineRunnig();
-        setValveState();
+    currentMillis = millis();
+    onboard_led.on = currentMillis % 1000 < 500;
+    if (currentMillis - displayMillis >= 35) updateRPM(RPM);
+    if (currentMillis - checkEngineMillis >= 20) {
+        checkIfEngineRunnig(currentMillis);
+        setValveState(RPM);
     }
 
     // ArduinoOTA.handle();
     onboard_led.update();
     ws.cleanupClients();
     
-    handlehostname();
+    //handlehostname();
     
 }

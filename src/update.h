@@ -4,7 +4,7 @@
 
 // Include of commons libraries
 #include "Commons.h"
-
+#include "utils.h"
 
 // Global variables used
 // Declare of the custom structure
@@ -21,8 +21,6 @@ extern const char* update_server_url;
 
 extern const char IRG_Root_X1 [] PROGMEM;
 
-// Global functions used
-extern void saveConfiguration(const char* filePath, const Config& config);
 
 
 

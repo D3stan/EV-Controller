@@ -16,9 +16,9 @@ enum Valve {
 
 // Export
 void updateRPM(unsigned long rpm);
-void checkIfEngineRunnig();
+void checkIfEngineRunnig(unsigned long current);
 void operateValve(int outputPin, Valve mode, int peakMillis = 1000);
-void setValveState();
+void setValveState(int rpm);
 
 
 // Import

@@ -1,32 +1,18 @@
 #ifndef VARS_MODULE
 #define VARS_MODULE
 
-/*
-// Macros
-#define LED_PIN             15
-#define BTN_PIN             5 
-#define INDUCTIVE_IN        4
-#define HTTP_SERVER_PORT    80
-#define DNS_PORT            53
-#define CONFIG_FILE_PATH "/config.json"
-*/
+const int my_led_pin = 15;
+const int valveOut = 12;
+const int inductiveIn = 14;
+const int my_http_server_port = 80;
+const int my_dns_port = 53;
+const char* config_file_path = "/config.json";
 
-extern const int my_led_pin;
-extern const int valveOut;
-extern const int inductiveIn;
-extern const int my_http_server_port;
-extern const int my_dns_port;
-extern const char* config_file_path;
-
-
-// Device infos
-extern const char* fw_version;
-extern const char* fs_version;        // unused
-extern const char* device;     // also used for mdns
-extern const char* platform ;
-
-// Server
-extern unsigned int httpTimeout;
-extern const char* update_server_url;
+const char* fw_version = "FW_1_0_2";
+const char* fs_version = "FS_1_0_0";        // unused
+const char* device = "rave-controller";     // also used for mdns
+const char* platform = "d1_mini";
+unsigned int httpTimeout = 5000;
+const char* update_server_url = "https://server-updater.deno.dev/update";
 
 #endif

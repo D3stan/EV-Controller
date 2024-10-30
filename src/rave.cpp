@@ -13,29 +13,35 @@ void updateRPM(unsigned long rpm = 0) {
     displayMillis = millis();
 }
 
-
-void checkIfEngineRunnig() {
-    if ((displayMillis - lastMicros * 1000) >= 1 * 1000) {
+void checkIfEngineRunnig(unsigned long current) {
+    if ((RPM > 0 && ((current - (lastMicros / 1000)) >= (1 * 1000)))) {
         RPM = 0;
+        Serial.printf("\nResetted rpm");
     }
 
     checkEngineMillis = millis();
 }
 
-void setValveState() {
-    if (RPM > 0) {
-        if (!reachedRpmOpenFirstTime && RPM > config.raveRpmOpen) {
+void setValveState(int rpm) {
+    if (rpm > 0) {
+        if (!reachedRpmOpenFirstTime && rpm > config.raveRpmOpen) {
             reachedRpmOpenFirstTime = true;
         }
 
-        if (reachedRpmOpenFirstTime && (RPM > config.raveRpmOpen || RPM < config.raveRpmClose) && !raveOpen) {
-            operateValve(valveOut, OPEN);
+        if (reachedRpmOpenFirstTime && (rpm > config.raveRpmOpen || rpm < config.raveRpmClose) && !raveOpen) {
             raveOpen = true;
+            operateValve(valveOut, OPEN);
 
-        } else if (raveOpen) {
-            operateValve(valveOut, CLOSE);
+        } else if (raveOpen && (rpm < config.raveRpmOpen && rpm > config.raveRpmClose)) {
             raveOpen = false;
+            
+            operateValve(valveOut, CLOSE);
+
         }
+
+    } else if (raveOpen) {
+        raveOpen = false;
+        operateValve(valveOut, CLOSE);
     }
 }
 
@@ -51,5 +57,6 @@ void operateValve(int outputPin, Valve mode, int peakMillis) {
     } else {
         Serial.printf("\nValve closed");
         analogWrite(outputPin, 0);
+        
     }
 }
