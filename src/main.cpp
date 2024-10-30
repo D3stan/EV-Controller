@@ -63,6 +63,9 @@ IPAddress AP_IP (42, 42, 42, 42);
 
 // Rpm count
 int RPM = 0;
+int lastRPM = 0;
+int lastRpmCount = 0;
+unsigned long currentMillis = 0;
 unsigned long currentMicros = 0;
 unsigned long lastMicros = 0;
 unsigned long displayMillis = 0;
@@ -374,10 +377,8 @@ void initWebServer() {
 void handlehostname() {
     if (config.wifiMode == WIFI_AP) {
         dnsServer.processNextRequest();
-        MDNS.update();
-    } else {
-        MDNS.update();
     }
+    MDNS.update();
 }
 
 // ----------------------------------------------------------------------------
@@ -589,17 +590,17 @@ void initGPIO() {
 // Valve Functions
 // ----------------------------------------------------------------------------
 
-void checkIfEngineRunnig() {
-    if ((displayMillis - lastMicros * 1000) >= 1 * 1000) {
+void checkIfEngineRunnig(unsigned long current) {
+    if (RPM > 0 && ((current - (lastMicros / 1000)) >= (1 * 1000))) {
+        Serial.printf("\nResetted rpm");
         RPM = 0;
+        Serial.printf("current: %lu, %lu", current, (lastMicros / 1000));
     }
-
     checkEngineMillis = millis();
 }
 
 void operateValve(int outputPin, Valve mode, int peakMillis = 1000) {
     if (mode == OPEN) {
-        valveOpen = true;
         Serial.printf("\nValve opened");
         analogWrite(outputPin, 100);
         restartTimer.once_ms(peakMillis, [outputPin] {
@@ -608,27 +609,32 @@ void operateValve(int outputPin, Valve mode, int peakMillis = 1000) {
             analogWrite(outputPin, 40);
         });
     } else {
+        Serial.printf("\nValve closed");
         analogWrite(outputPin, 0);
-        valveOpen = false;
+        
     }
 }
 
-void setValveState() {
-    if (RPM > 0) {
-        if (!reachedRpmOpenFirstTime && RPM > config.raveRpmOpen) {
+void setValveState(int rpm) {
+    // Serial.printf("\nRPM: %d, valve: %d", RPM, valveOpen);
+    if (rpm > 0) {
+        if (!reachedRpmOpenFirstTime && rpm > config.raveRpmOpen) {
             reachedRpmOpenFirstTime = true;
         }
 
-        if (reachedRpmOpenFirstTime && (RPM > config.raveRpmOpen || RPM < config.raveRpmClose) && !valveOpen) {
+        if (reachedRpmOpenFirstTime && (rpm > config.raveRpmOpen || rpm < config.raveRpmClose) && !valveOpen) {
+            valveOpen = true;
             operateValve(VALVE_OUT, OPEN);
 
-        } else if (valveOpen && (RPM < config.raveRpmOpen && RPM > config.raveRpmClose)) {
-            Serial.printf("\nValve closed");
+        } else if (valveOpen && (rpm < config.raveRpmOpen && rpm > config.raveRpmClose)) {
+            valveOpen = false;
+            
             operateValve(VALVE_OUT, CLOSE);
 
         }
 
-    } else {
+    } else if (valveOpen) {
+        valveOpen = false;
         operateValve(VALVE_OUT, CLOSE);
     }
 }
@@ -656,12 +662,12 @@ void setup() {
 // ----------------------------------------------------------------------------
 
 void loop() {
-    static unsigned long currentMillis = millis();
+    currentMillis = millis();
     onboard_led.on = currentMillis % 1000 < 500;
     if (currentMillis - displayMillis >= 35) updateRPM(RPM);
     if (currentMillis - checkEngineMillis >= 20) {
-        checkIfEngineRunnig();
-        setValveState();
+        checkIfEngineRunnig(currentMillis);
+        setValveState(RPM);
     }
 
     // ArduinoOTA.handle();

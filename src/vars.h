@@ -2,8 +2,8 @@
 
 // Macros
 #define LED_PIN             15
-#define VALVE_OUT           5 
-#define INDUCTIVE_IN        4
+#define VALVE_OUT           12
+#define INDUCTIVE_IN        14
 #define HTTP_SERVER_PORT    80
 #define DNS_PORT            53
 #define CONFIG_FILE_PATH "/config.json"

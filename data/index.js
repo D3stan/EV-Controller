@@ -183,7 +183,7 @@ function onMessage(event) {
             alert("Rebooting...")
         }
     } else {
-        if (data.rpm) {
+        if (data.rpm || data.rpm == 0) {
             updateGauge(data.rpm);
         }
     }
@@ -392,7 +392,20 @@ function updateRpmSliderValue() {
 
 
 function updateGauge(rpm) {
-    clearTimeout(timerID)
+    if (rpm == 0) {
+        rpmText.textContent = rpm;
+        raveLed.className = 'led-red';
+        gauge.style.background = `conic-gradient(
+            rgb(170, 170, 170) 0deg,
+            rgb(170, 170, 170) 90deg,
+            white 90deg,
+            white 180deg,
+            rgb(170, 170, 170) 180deg,
+            rgb(170, 170, 170) 360deg
+        )`;
+        gauge.setAttribute('data-current-degrees', 0);
+        return
+    }
     const maxRpm = 15000; // Maximum RPM value
     let targetDegrees;
     
@@ -461,9 +474,5 @@ function updateGauge(rpm) {
     animateGauge();
 
     // Update the RPM text
-    rpmText.textContent = rpm;
-
-    timerID = setTimeout(() => {
-        updateGauge(0)
-    }, 3000)
+    rpmText.textContent = rpm; 
 }
