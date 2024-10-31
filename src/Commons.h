@@ -36,6 +36,7 @@ struct Config {
     int wifiMode;
     int raveRpmOpen;
     int raveRpmClose;
+    int hysteresisMillis;
 
     String WIFI_SSID;
     String WIFI_PASS;

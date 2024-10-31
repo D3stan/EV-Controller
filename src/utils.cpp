@@ -17,16 +17,17 @@ void loadConfiguration(const char* filePath, Config& config) {
     }
     
     serializeJsonPretty(doc, Serial);
-    config.wifiMode     = doc["wifiMode"];
-    config.WIFI_PASS    = doc["wifiPsw"].as<const char*>();
-    config.WIFI_SSID    = doc["wifiSsid"].as<const char*>();
-    config.AP_SSID      = doc["apSsid"].as<const char*>();
-    config.AP_PASS      = doc["apPsw"].as<const char*>();
-    config.fw_version   = fw_version;
-    config.fs_version   = doc["fsid"].as<const char*>();
-    config.raveRpmOpen  = doc["raveRpmOpen"];
-    config.raveRpmClose = doc["raveRpmClose"];
-    config.lastError    = doc["lastError"].as<const char*>();
+    config.wifiMode         = doc["wifiMode"];
+    config.WIFI_PASS        = doc["wifiPsw"].as<const char*>();
+    config.WIFI_SSID        = doc["wifiSsid"].as<const char*>();
+    config.AP_SSID          = doc["apSsid"].as<const char*>();
+    config.AP_PASS          = doc["apPsw"].as<const char*>();
+    config.fw_version       = fw_version;
+    config.fs_version       = doc["fsid"].as<const char*>();
+    config.raveRpmOpen      = doc["raveRpmOpen"];
+    config.raveRpmClose     = doc["raveRpmClose"];
+    config.lastError        = doc["lastError"].as<const char*>();
+    config.hysteresisMillis = doc["hysteresisMillis"];
     
     doc.clear();
     configFile.close();
@@ -44,22 +45,23 @@ void saveConfiguration(const char* filePath, const Config& config) {
     JsonDocument doc;
 
     // These values are NEVER read from the file, ONLY written
-    doc["hwid"] = config.hwid;
-    doc["fwid"] = fw_version;
+    doc["hwid"]                 = config.hwid;
+    doc["fwid"]                 = fw_version;
 
     // NEVER modified
-    doc["fsid"] = config.fs_version;
+    doc["fsid"]                 = config.fs_version;
 
     // Read (modified) and writted
-    doc["wifiMode"] = config.wifiMode;
-    doc["wifiPsw"] = config.WIFI_PASS;
-    doc["wifiSsid"] = config.WIFI_SSID;
-    doc["apSsid"] = config.AP_SSID;
-    doc["apPsw"] = config.AP_PASS;
-    doc["raveRpmOpen"] = config.raveRpmOpen;
-    doc["raveRpmClose"] = config.raveRpmClose;
+    doc["wifiMode"]             = config.wifiMode;
+    doc["wifiPsw"]              = config.WIFI_PASS;
+    doc["wifiSsid"]             = config.WIFI_SSID;
+    doc["apSsid"]               = config.AP_SSID;
+    doc["apPsw"]                = config.AP_PASS;
+    doc["raveRpmOpen"]          = config.raveRpmOpen;
+    doc["raveRpmClose"]         = config.raveRpmClose;
     
-    doc["lastError"] = config.lastError;
+    doc["lastError"]            = config.lastError;
+    doc["hysteresisMillis"]     = config.hysteresisMillis;
 
     serializeJson(doc, configFile);
     configFile.close();

@@ -9,5 +9,6 @@
     "fwid": "FW_1_0_0",
     "fsid": "FS_1_0_0",
     "hwid": "abc123",
-    "lastError": ""
+    "lastError": "",
+    "hysteresisMillis": 1000
 }

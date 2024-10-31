@@ -37,6 +37,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
             // update rave settings
             config.raveRpmOpen = json["raveRpmOpen"];
             config.raveRpmClose = json["raveRpmClose"];
+            config.hysteresisMillis = json["hysteresisMillis"];
             settingsUpdate = true;
 
         } else if (!strcmp(dataType, "wifi-settings")) {

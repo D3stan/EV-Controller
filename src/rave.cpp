@@ -1,6 +1,7 @@
 #include "rave.h"
 
 Ticker peakAndHoldTimer;
+Ticker hysteresisTimer;
 bool reachedRpmOpenFirstTime = false;
 
 void updateRPM(unsigned long rpm = 0) {
@@ -24,8 +25,11 @@ void checkIfEngineRunnig(unsigned long current) {
 
 void setValveState(int rpm) {
     if (rpm > 0) {
+
         if (!reachedRpmOpenFirstTime && rpm > config.raveRpmOpen) {
             reachedRpmOpenFirstTime = true;
+        } else if (hysteresisTimer.active()) {
+            return;
         }
 
         if (reachedRpmOpenFirstTime && (rpm > config.raveRpmOpen || rpm < config.raveRpmClose) && !raveOpen) {
@@ -34,7 +38,6 @@ void setValveState(int rpm) {
 
         } else if (raveOpen && (rpm < config.raveRpmOpen && rpm > config.raveRpmClose)) {
             raveOpen = false;
-            
             operateValve(valveOut, CLOSE);
 
         }
@@ -59,4 +62,5 @@ void operateValve(int outputPin, Valve mode, int peakMillis) {
         analogWrite(outputPin, 0);
         
     }
+    hysteresisTimer.once_ms(config.hysteresisMillis, [] {});
 }

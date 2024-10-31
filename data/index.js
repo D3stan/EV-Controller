@@ -8,6 +8,7 @@ var animationSpeed = 0.1; // Adjust this value to control the speed of the gauge
 
 var raveRpmClose = 3500
 var raveRpmOpen = 11500
+var hysteresisMillis = 1000
 
 var wifiPSW     = ""
 var wifiSSID    = ""
@@ -53,6 +54,7 @@ var fsidText
 var hwidText
 var rpmOpenText
 var rpmCloseText
+var hysteresisMillisText
 
 // Input Fields
 var wifiSsidInput
@@ -61,6 +63,7 @@ var apSsidInput
 var apPswInput
 var rpmOpenSlider
 var rpmCloseSlider
+var hysteresisMillisSlider
 
 
 // ----------------------------------------------------------------------------
@@ -101,19 +104,22 @@ function onLoad(event) {
     rpmCloseSlider          = document.getElementById('rpm-close-slider')
     rpmOpenText             = document.getElementById('rpm-open-value')
     rpmCloseText            = document.getElementById('rpm-close-value')
-
+    hysteresisMillisText    = document.getElementById('hysteresis-millis-value')
+    hysteresisMillisSlider  = document.getElementById('hysteresis-millis-slider')
 
 
     updateButton.addEventListener("click", showPopup)
     settingsButton.addEventListener("click", openSettings)
     updateSettingsButton.addEventListener("click", updateSettings)
     restartButton.addEventListener("click", restartForUpdate)
-    rpmCloseSlider.oninput = updateRpmSliderValue
-    rpmOpenSlider.oninput = updateRpmSliderValue
+    rpmCloseSlider.oninput = updateSliderValue
+    rpmOpenSlider.oninput = updateSliderValue
+    hysteresisMillisSlider.oninput = updateSliderValue
 
     
     rpmCloseText.innerText = raveRpmClose
     rpmOpenText.innerText = raveRpmOpen
+    hysteresisMillisText.innerText = hysteresisMillis
 
 
     // Toggle dropdown visibility on button click
@@ -215,6 +221,7 @@ function updateAllDialogFields() {
 
     rpmOpenText = raveRpmOpen.toString()
     rpmCloseText = raveRpmClose.toString()
+    hysteresisMillisText = hysteresisMillis.toString()
 }
 
 function openSettings() {
@@ -246,7 +253,8 @@ function updateSettings() {
         toSend = JSON.stringify({
             type: "rave-settings",
             raveRpmOpen: raveRpmOpen,
-            raveRpmClose: raveRpmClose
+            raveRpmClose: raveRpmClose,
+            hysteresisMillis: hysteresisMillis
         })
         
 
@@ -298,6 +306,7 @@ function retrieveConfigValues() {
         
         raveRpmClose = config.raveRpmClose
         raveRpmOpen = config.raveRpmOpen
+        hysteresisMillis = config.hysteresisMillis
         
         wifiPSW = config.wifiPsw
         wifiSSID = config.wifiSsid
@@ -375,7 +384,7 @@ function handleOptionSelect(value) {
     }
 }
 
-function updateRpmSliderValue() {
+function updateSliderValue() {
     document.getElementById(this.id.substring(0, this.id.lastIndexOf("-") + 1) + "value").innerText = this.value;
     if (this.id.substring(this.id.indexOf("-") + 1, this.id.lastIndexOf("-")) == "close") {
         raveRpmClose = parseInt(this.value)
