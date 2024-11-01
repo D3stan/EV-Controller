@@ -33,7 +33,7 @@ void initWiFi() {
 
             if (i >= 40) {
                 config.wifiMode = WIFI_AP;
-                config.lastError = "Incorrect WiFi password!";
+                config.lastMessage = "Incorrect WiFi password!";
                 saveConfiguration(config_file_path, config);
                 delay(1500);
                 ESP.restart();

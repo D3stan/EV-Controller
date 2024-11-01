@@ -7,7 +7,6 @@
 
 extern boolean FSmounted;
 extern Config config;
-extern String errorReplacementPage;
 
 extern const int my_http_server_port;
 extern const char* device;

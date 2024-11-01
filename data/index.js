@@ -318,10 +318,12 @@ function retrieveConfigValues() {
         hwid = config.hwid
         
         updateAllDialogFields()
-        if (config.lastError != "") {
-            if (confirm(config.lastError)) {
+        if (config.lastMessage != "") {
+            // Display last message
+            let toDisplay = config.lastMessage ? config.lastMessage : "Filesystem error"
+            if (confirm(toDisplay)) {
                 let toSend = JSON.stringify({
-                    type: "reset-error"
+                    type: "reset-msg"
                 })
                 websocket.send(toSend)
             }

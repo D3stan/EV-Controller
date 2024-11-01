@@ -47,7 +47,7 @@ struct Config {
     String fw_version;
     String fs_version;
 
-    String lastError;
+    String lastMessage;
 };
 
 #endif  // COMMONS_H

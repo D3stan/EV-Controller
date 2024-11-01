@@ -26,7 +26,7 @@ void loadConfiguration(const char* filePath, Config& config) {
     config.fs_version       = doc["fsid"].as<const char*>();
     config.raveRpmOpen      = doc["raveRpmOpen"];
     config.raveRpmClose     = doc["raveRpmClose"];
-    config.lastError        = doc["lastError"].as<const char*>();
+    config.lastMessage        = doc["lastMessage"].as<const char*>();
     config.hysteresisMillis = doc["hysteresisMillis"];
     
     doc.clear();
@@ -60,7 +60,7 @@ void saveConfiguration(const char* filePath, const Config& config) {
     doc["raveRpmOpen"]          = config.raveRpmOpen;
     doc["raveRpmClose"]         = config.raveRpmClose;
     
-    doc["lastError"]            = config.lastError;
+    doc["lastMessage"]            = config.lastMessage;
     doc["hysteresisMillis"]     = config.hysteresisMillis;
 
     serializeJson(doc, configFile);

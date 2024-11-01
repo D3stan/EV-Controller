@@ -7,8 +7,8 @@
     "raveRpmOpen": 9000,
     "raveRpmClose": 4000,
     "fwid": "FW_1_0_0",
-    "fsid": "FS_1_0_0",
+    "fsid": "FS_1_0_4",
     "hwid": "abc123",
-    "lastError": "",
+    "lastMessage": "",
     "hysteresisMillis": 1000
 }

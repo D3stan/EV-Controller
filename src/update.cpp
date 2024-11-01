@@ -4,6 +4,7 @@
     X509List cert(IRG_Root_X1);
 #endif
 
+Ticker updateTimer;
 
 // ----------------------------------------------------------------------------
 // Remote Update Utils
@@ -74,22 +75,20 @@ void checkForUpdate(bool firstTime) {
 
     Serial.println("Starting update from: " + String(update_server_url));
     t_httpUpdate_return ret = firstTime ? myESPhttpUpdate.update(httpClient) : myESPhttpUpdate.updateFS(httpClient);
+    char msg[100];
 
     if (ret == HTTP_UPDATE_FAILED) {
         Serial.printf("HTTP_UPDATE_FAILED Error (%d): %s\n", myESPhttpUpdate.getLastError(), myESPhttpUpdate.getLastErrorString().c_str());
-        char err[100];
-        sprintf(err, "Update Failed: %s", myESPhttpUpdate.getLastErrorString().c_str());
-        config.lastError = err;
-        config.wifiMode = WIFI_AP;
-        saveConfiguration(config_file_path, config);
-        delay(1500);
-        ESP.restart();
+        sprintf(msg, "Update Failed: %s", myESPhttpUpdate.getLastErrorString().c_str());
 
     } else {
         if (ret == HTTP_UPDATE_NO_UPDATES) {
             Serial.println("No updates available");
+            sprintf(msg, "System already updated");
+
         } else {
             Serial.printf("Update %s successfully", firstTime ? "firmware" : "filesystem");
+            sprintf(msg, "Update successfully");
         }
 
         if (firstTime) {
@@ -97,12 +96,11 @@ void checkForUpdate(bool firstTime) {
             wifiClient.stop();
             checkForUpdate(false);
         }
-        else {
-            config.wifiMode = WIFI_AP;
-            saveConfiguration(config_file_path, config);
-            delay(1500);
-            ESP.restart();
-        }
     }
+
+    config.lastMessage = msg;
+    config.wifiMode = WIFI_AP;
+    saveConfiguration(config_file_path, config);
+    updateTimer.once(1.5, [] {ESP.restart();});
 
 }

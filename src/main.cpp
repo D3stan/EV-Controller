@@ -131,6 +131,6 @@ void loop() {
     onboard_led.update();
     ws.cleanupClients();
     
-    //handlehostname();
+    handlehostname();
     
 }

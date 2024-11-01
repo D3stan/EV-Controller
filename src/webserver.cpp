@@ -6,7 +6,7 @@
 
 
 // Locals
-String errorReplacementPage = index_html;
+String errorReplacementPage = "";
 // WebServer
 AsyncWebServer server(my_http_server_port);
 DNSServer dnsServer;
@@ -19,16 +19,18 @@ void onRootRequest(AsyncWebServerRequest *request) {
         errorMsg = "Error: filesystem not mounted correctly";
     } else if (!config.wifiMode) {
         errorMsg = "Error: cannot parse config file";
+    } else {
+        errorMsg = "how did you get here?";
     }
 
-    errorReplacementPage = index_html;
+    errorReplacementPage = String(index_html);
     errorReplacementPage.replace(errorPlaceHolder, errorMsg);
     errorReplacementPage.replace(errorCodePlaceHolder, "500");
     request->send(500, "text/html", errorReplacementPage);
 }
 
 void notFound(AsyncWebServerRequest *request) {
-    errorReplacementPage = index_html;
+    errorReplacementPage = String(index_html);
     errorReplacementPage.replace(errorPlaceHolder, "Error: Page Not Found");
     errorReplacementPage.replace(errorCodePlaceHolder, "404");
     request->send(404, "text/html", errorReplacementPage);

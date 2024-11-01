@@ -48,8 +48,8 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
             config.AP_SSID = json["apSsid"].as<String>();
             settingsUpdate = true;
 
-        } else if (!strcmp(dataType, "reset-error")) {
-            config.lastError = "";
+        } else if (!strcmp(dataType, "reset-msg")) {
+            config.lastMessage = "";
 
         } else {
             Serial.println("Unknown data type");
