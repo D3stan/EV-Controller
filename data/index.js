@@ -1,6 +1,7 @@
 var gateway = `ws://${window.location.hostname}/ws`;
 var websocket;
 var statusPageActive = true
+var raveManualOpened = false
 var timerID
 
 var currentDegrees = 0;
@@ -40,6 +41,7 @@ var updateSettingsButton
 var dropdownButton
 var restartButton
 var dropdownOptions
+var raveButton
 
 // Indicators
 var statusLed
@@ -106,12 +108,14 @@ function onLoad(event) {
     rpmCloseText            = document.getElementById('rpm-close-value')
     hysteresisMillisText    = document.getElementById('hysteresis-millis-value')
     hysteresisMillisSlider  = document.getElementById('hysteresis-millis-slider')
+    raveButton              = document.getElementById('rave')
 
 
     updateButton.addEventListener("click", showPopup)
     settingsButton.addEventListener("click", openSettings)
     updateSettingsButton.addEventListener("click", updateSettings)
     restartButton.addEventListener("click", restartForUpdate)
+    raveButton.addEventListener("click", raveManualOpen)
     rpmCloseSlider.oninput = updateSliderValue
     rpmOpenSlider.oninput = updateSliderValue
     hysteresisMillisSlider.oninput = updateSliderValue
@@ -222,6 +226,21 @@ function updateAllDialogFields() {
     rpmOpenText = raveRpmOpen.toString()
     rpmCloseText = raveRpmClose.toString()
     hysteresisMillisText = hysteresisMillis.toString()
+}
+
+function raveManualOpen() {
+    if (raveManualOpened) {
+        raveManualOpened = false
+        raveLed.className = "led-red"
+    } else {
+        raveManualOpened = true
+        raveLed.className = "led-green"
+    }
+    websocket.send(JSON.stringify({
+        type: "manual-rave",
+        "activate": "true"
+    }))
+    
 }
 
 function openSettings() {
@@ -388,10 +407,15 @@ function handleOptionSelect(value) {
 
 function updateSliderValue() {
     document.getElementById(this.id.substring(0, this.id.lastIndexOf("-") + 1) + "value").innerText = this.value;
-    if (this.id.substring(this.id.indexOf("-") + 1, this.id.lastIndexOf("-")) == "close") {
+
+    // the middle name of the html element (es: rpm-open-slider --> open)
+    let middleName = this.id.substring(this.id.indexOf("-") + 1, this.id.lastIndexOf("-"))
+    if (middleName == "close") {
         raveRpmClose = parseInt(this.value)
-    } else if (this.id.substring(this.id.indexOf("-") + 1, this.id.lastIndexOf("-")) == "open") {
+    } else if (middleName == "open") {
         raveRpmOpen = parseInt(this.value)
+    } else if (middleName == "millis") {
+        hysteresisMillis = parseInt(this.value)
     }
 
     let min = parseInt(this.min)

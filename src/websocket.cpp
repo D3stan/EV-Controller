@@ -51,6 +51,14 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
         } else if (!strcmp(dataType, "reset-msg")) {
             config.lastMessage = "";
 
+        } else if (!strcmp(dataType, "manual-rave")) {
+            if (!strcmp(json["activate"], "true")) {
+                raveManualOpen = true;
+                operateValve(valveOut, raveOpen ? CLOSE : OPEN);
+            } else {
+                raveManualOpen = false;
+            }
+
         } else {
             Serial.println("Unknown data type");
             

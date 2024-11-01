@@ -31,4 +31,5 @@ extern unsigned long lastMicros;
 extern int RPM;
 extern const int valveOut;
 extern bool raveOpen;
+extern bool raveManualOpen;
 #endif

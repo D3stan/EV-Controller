@@ -17,6 +17,7 @@
 
 Config config;
 
+bool raveManualOpen = false;
 bool raveOpen = false;
 bool FSmounted = false;
 
