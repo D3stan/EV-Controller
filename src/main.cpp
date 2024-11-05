@@ -253,9 +253,14 @@ void initHwid() {
     // Get MAC Address and remove colons
     String macAddress = WiFi.macAddress();
 
-    // Get Flash Chip ID and convert to hexadecimal string
-    String flashChipId = String(ESP.getFlashChipId(), HEX);
-
+    #if defined(ESP8266)
+        // Get Flash Chip ID and convert to hexadecimal string
+        String flashChipId = String(ESP.getFlashChipId(), HEX);
+    #elif defined(ESP32)
+        uint32_t flashId = 0;
+        esp_flash_read_id(nullptr, &flashId);
+        String flashChipId = String(flashId, HEX);
+    #endif
     // Combine MAC Address and Flash Chip ID
     String tempHwid = macAddress + flashChipId;
 
