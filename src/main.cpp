@@ -6,8 +6,6 @@
 #include "wifi.h"
 #include "rave.h"
 #include "vars.h"
-// Local Modules
-// #include "vars.h" //already inside of commons
 #include "cert.h"
 #include "notfound.h"
 
@@ -87,7 +85,8 @@ void initFS() {
 
 void initGPIO() {
     pinMode(onboard_led.pin, OUTPUT);
-    pinMode(valveOut, OUTPUT);
+    pinMode(valveOut,        OUTPUT);
+    pinMode(tachoOut,        OUTPUT);
     pinMode(inductiveIn,      INPUT);
     attachInterrupt(digitalPinToInterrupt(inductiveIn), signalDetected, FALLING);
 

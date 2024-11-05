@@ -1,7 +1,7 @@
 #ifndef VARS_MODULE
 #define VARS_MODULE
 
-const int my_led_pin = 15;
+const int tachoOut = 13;
 const int valveOut = 12;
 const int inductiveIn = 14;
 const int my_http_server_port = 80;

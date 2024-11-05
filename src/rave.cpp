@@ -4,13 +4,21 @@ Ticker peakAndHoldTimer;
 Ticker hysteresisTimer;
 bool reachedRpmOpenFirstTime = false;
 
+
+
 void updateRPM(unsigned long rpm = 0) {
+    // TO test --> jsondocument global and reuse it with .clear()
     JsonDocument json;
     json["rpm"] = rpm;
 
     char data[30];
     size_t len = serializeJson(json, data);
     ws.textAll(data, len);
+
+    // Tacho handling
+
+
+
     displayMillis = millis();
 }
 
