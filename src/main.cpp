@@ -468,7 +468,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
             size_t len = serializeJson(doc, data);
             ws.textAll(data, len);
             doc.clear();
-            restartTimer.once(2, []() {ESP.restart();});
+            restartTimer.once(2, []() {ESP.restart();});    // no parameters lambda works on ESP32
         } else if (settingsUpdate) {
             doc["update"] = "updated";
             size_t len = serializeJson(doc, data);
@@ -602,8 +602,14 @@ void initGPIO() {
     }*/
     delay(500);
     Serial.println("USB CDC enabled");
-    // analogWriteRange(100);
-    // analogWriteFreq(800);
+
+    #if defined(ESP8266)
+        analogWriteRange(255);
+        analogWriteFreq(800);
+    #elif defined(ESP32)
+        ledcSetup(0, 500, 8);
+        ledcAttachPin(VALVE_OUT, 0);
+    #endif
 }
 
 
@@ -621,18 +627,33 @@ void checkIfEngineRunnig(unsigned long current) {
     checkEngineMillis = millis();
 }
 
+void valveHold(int outputPin) {
+    // This function will be called after the specified delay
+    Serial.printf("\nValve in hold");
+    #if defined(ESP8266)
+        analogWrite(outputPin, 102);
+    #elif defined(ESP32)
+        ledcWrite(outputPin, 102);
+    #endif
+}
+
 void operateValve(int outputPin, Valve mode, int peakMillis = 1000) {
     if (mode == OPEN) {
         Serial.printf("\nValve opened");
-        // analogWrite(outputPin, 100);
-        // restartTimer.once_ms(peakMillis, [outputPin] {
-            // switch to hold state
-            Serial.printf("\nValve in hold");
-            // analogWrite(outputPin, 40);
-        // });
+        #if defined(ESP8266)
+            analogWrite(outputPin, 255);
+        #elif defined(ESP32)
+            ledcWrite(outputPin, 255);
+        #endif
+        restartTimer.once_ms(peakMillis, &valveHold, outputPin);
+
     } else {
         Serial.printf("\nValve closed");
-        // analogWrite(outputPin, 0);
+        #if defined(ESP8266)
+            analogWrite(outputPin, 0);
+        #elif defined(ESP32)
+            ledcWrite(outputPin, 0);
+        #endif
         
     }
 }
@@ -650,7 +671,6 @@ void setValveState(int rpm) {
 
         } else if (valveOpen && (rpm < config.raveRpmOpen && rpm > config.raveRpmClose)) {
             valveOpen = false;
-            
             operateValve(VALVE_OUT, CLOSE);
 
         }
