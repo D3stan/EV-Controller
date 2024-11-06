@@ -6,13 +6,13 @@
 #define INDUCTIVE_IN        14
 #define HTTP_SERVER_PORT    80
 #define DNS_PORT            53
-#define CONFIG_FILE_PATH "/config.json"
+#define CONFIG_FILE_PATH    "/config.json"
 
 // Device infos
-const char* fw_version = "FW_1_0_2";
+const char* fw_version = "FW_1_0_0";
 const char* fs_version = "FS_1_0_0";        // unused
 const char* device = "rave-controller";     // also used for mdns
-const char* platform = "d1_mini";
+const char* platform = "s2_mini";
 
 // Server
 uint16_t httpTimeout = 5000;

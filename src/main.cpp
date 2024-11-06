@@ -201,7 +201,13 @@ void checkForUpdate(bool firstTime = true) {
     httpClient.addHeader("platform", platform);
     httpClient.addHeader("mode", firstTime ? "firmware" : "filesystem");
     
-    ESP8266HTTPUpdate myESPhttpUpdate;
+
+    #if defined(ESP8266)
+        ESP8266HTTPUpdate myESPhttpUpdate;
+    #elif defined(ESP32)
+        HTTPUpdate myESPhttpUpdate;
+    #endif
+    
 
     // Remove automatic reboot
     myESPhttpUpdate.rebootOnUpdate(false);
@@ -215,7 +221,12 @@ void checkForUpdate(bool firstTime = true) {
     myESPhttpUpdate.onError(update_error);
 
     Serial.println("Starting update from: " + String(update_server_url));
-    t_httpUpdate_return ret = firstTime ? myESPhttpUpdate.update(httpClient) : myESPhttpUpdate.updateFS(httpClient);
+    #if defined(ESP8266)
+        t_httpUpdate_return ret = firstTime ? myESPhttpUpdate.update(httpClient) : myESPhttpUpdate.updateFS(httpClient);
+    #elif defined(ESP32)
+        t_httpUpdate_return ret = firstTime ? myESPhttpUpdate.update(httpClient) : myESPhttpUpdate.updateSpiffs(httpClient);
+    #endif
+    
 
     if (ret == HTTP_UPDATE_FAILED) {
         Serial.printf("HTTP_UPDATE_FAILED Error (%d): %s\n", myESPhttpUpdate.getLastError(), myESPhttpUpdate.getLastErrorString().c_str());
@@ -383,7 +394,7 @@ void handlehostname() {
     if (config.wifiMode == WIFI_AP) {
         dnsServer.processNextRequest();
     }
-    MDNS.update();
+    // MDNS.update();
 }
 
 // ----------------------------------------------------------------------------
@@ -585,8 +596,14 @@ void initGPIO() {
     attachInterrupt(digitalPinToInterrupt(INDUCTIVE_IN), signalDetected, FALLING);
 
     Serial.begin(115200);
-    analogWriteRange(100);
-    analogWriteFreq(800);
+    /*
+    while (!Serial) {
+        ; // Wait for the serial port to connect (useful for debugging)
+    }*/
+    delay(500);
+    Serial.println("USB CDC enabled");
+    // analogWriteRange(100);
+    // analogWriteFreq(800);
 }
 
 
@@ -607,15 +624,15 @@ void checkIfEngineRunnig(unsigned long current) {
 void operateValve(int outputPin, Valve mode, int peakMillis = 1000) {
     if (mode == OPEN) {
         Serial.printf("\nValve opened");
-        analogWrite(outputPin, 100);
-        restartTimer.once_ms(peakMillis, [outputPin] {
+        // analogWrite(outputPin, 100);
+        // restartTimer.once_ms(peakMillis, [outputPin] {
             // switch to hold state
             Serial.printf("\nValve in hold");
-            analogWrite(outputPin, 40);
-        });
+            // analogWrite(outputPin, 40);
+        // });
     } else {
         Serial.printf("\nValve closed");
-        analogWrite(outputPin, 0);
+        // analogWrite(outputPin, 0);
         
     }
 }
