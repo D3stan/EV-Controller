@@ -31,6 +31,16 @@ void checkIfEngineRunnig(unsigned long current) {
     checkEngineMillis = millis();
 }
 
+void valveHold(int outputPin) {
+    // This function will be called after the specified delay
+    Serial.printf("\nValve in hold");
+    #if defined(ESP8266)
+        analogWrite(outputPin, 102);
+    #elif defined(ESP32)
+        ledcWrite(outputPin, 102);
+    #endif
+}
+
 void setValveState(int rpm) {
     if (raveManualOpen) return;
     if (rpm > 0) {
@@ -58,16 +68,20 @@ void operateValve(int outputPin, Valve mode, int peakMillis) {
     if (mode == OPEN) {
         raveOpen = true;
         Serial.printf("\nValve opened");
-        analogWrite(outputPin, 100);
-        peakAndHoldTimer.once_ms(peakMillis, [outputPin] {
-            // switch to hold state
-            Serial.printf("\nValve in hold");
-            analogWrite(outputPin, 40);
-        });
+        #if defined(ESP8266)
+            analogWrite(outputPin, 100);
+        #elif defined(ESP32)
+            //
+        #endif
+        peakAndHoldTimer.once_ms(peakMillis, &valveHold, outputPin);
     } else {
         Serial.printf("\nValve closed");
         raveOpen = false;
-        analogWrite(outputPin, 0);
+        #if defined(ESP8266)
+            analogWrite(outputPin, 0);
+        #elif defined(ESP32)
+            //
+        #endif
         
     }
     hysteresisTimer.once_ms(config.hysteresisMillis, [] {});

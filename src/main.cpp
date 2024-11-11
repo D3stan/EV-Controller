@@ -13,6 +13,8 @@
 // Definition of global constants
 // ----------------------------------------------------------------------------
 
+
+
 Config config;
 
 bool raveManualOpen = false;
@@ -90,8 +92,13 @@ void initGPIO() {
     pinMode(inductiveIn,      INPUT);
     attachInterrupt(digitalPinToInterrupt(inductiveIn), signalDetected, FALLING);
 
-    analogWriteRange(100);
-    analogWriteFreq(800);
+    #if defined(ESP8266)
+        analogWriteRange(255);
+        analogWriteFreq(800);
+    #elif defined(ESP32)
+        //ledcSetup(0, 500, 8);
+        //ledcAttachPin(VALVE_OUT, 0);
+    #endif
 
     Serial.begin(115200);
 }

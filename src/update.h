@@ -6,11 +6,12 @@
 #include "Commons.h"
 #include "utils.h"
 
+
 // Global variables used
 // Declare of the custom structure
 extern Config config;
 extern AsyncWebServer server;
-extern DNSServer dnsServer;
+//extern DNSServer dnsServer;
 extern IPAddress AP_IP;
 
 extern const char* config_file_path; 

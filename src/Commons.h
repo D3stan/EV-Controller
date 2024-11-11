@@ -4,14 +4,7 @@
 
 // Include of commons libraries
 
-// Generic Libraries
-#include <ArduinoJson.h>
-#include <Ticker.h>
-#include <LittleFS.h>
 
-#include <ESPAsyncWebServer.h>
-#include <WiFiClientSecure.h>
-#include <DNSServer.h>
 
 
 // MCU sensitive lbraries
@@ -31,6 +24,15 @@
 #error "Only ESP8266 or ESP32"
 #endif
 
+// Generic Libraries
+#include <ArduinoJson.h>
+#include <Ticker.h>
+#include <LittleFS.h>
+
+#include <ESPAsyncWebServer.h>
+#include <WiFiClientSecure.h>
+#include <DNSServer.h>
+
 
 struct Config {
     int wifiMode;
@@ -49,5 +51,7 @@ struct Config {
 
     String lastMessage;
 };
+
+
 
 #endif  // COMMONS_H

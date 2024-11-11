@@ -18,8 +18,8 @@ void initWiFi() {
 
         Serial.printf("%s\n", WiFi.softAPIP().toString().c_str());
 
-        dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
-        dnsServer.start(my_dns_port, "*", AP_IP);
+        //dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
+        //dnsServer.start(my_dns_port, "*", AP_IP);
         
     
     } else if (config.wifiMode == WIFI_STA) {

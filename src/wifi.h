@@ -17,7 +17,7 @@ extern IPAddress AP_IP;
 
 // Import
 extern Config config;
-extern DNSServer dnsServer;
+// extern DNSServer dnsServer;
 extern const int my_dns_port;
 extern const char* config_file_path;
 

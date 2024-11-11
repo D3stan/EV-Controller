@@ -9,7 +9,12 @@
 String errorReplacementPage = "";
 // WebServer
 AsyncWebServer server(my_http_server_port);
-DNSServer dnsServer;
+#if defined(ESP8266)
+    DNSServer dnsServer;
+#elif defined(ESP32)
+    //
+#endif
+
 
 
 void onRootRequest(AsyncWebServerRequest *request) {
@@ -46,19 +51,35 @@ void initWebServer() {
     server.onNotFound(notFound);
     server.begin();
     
-    if (!MDNS.begin(device)) {
-        Serial.println("Error setting up MDNS responder!");
-    }
-    MDNS.addService("http", "tcp", 80);
+    #if defined(ESP8266)
+        if (!MDNS.begin(device)) {
+            Serial.println("Error setting up MDNS responder!");
+        }
+        MDNS.addService("http", "tcp", 80);
+    #elif defined(ESP32)
+        //
+    #endif
+    
+    
 
     // ArduinoOTA.begin();
 }
 
 void handlehostname() {
     if (config.wifiMode == WIFI_AP) {
-        dnsServer.processNextRequest();
-        MDNS.update();
+        #if defined(ESP8266)
+            dnsServer.processNextRequest();
+            MDNS.update();
+        #elif defined(ESP32)
+            //
+        #endif
+        
     } else {
-        MDNS.update();
+        #if defined(ESP8266)
+            MDNS.update();
+        #elif defined(ESP32)
+            //
+        #endif
+        
     }
 }

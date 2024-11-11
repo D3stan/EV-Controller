@@ -60,7 +60,13 @@ void checkForUpdate(bool firstTime) {
     httpClient.addHeader("platform", platform);
     httpClient.addHeader("mode", firstTime ? "firmware" : "filesystem");
     
-    ESP8266HTTPUpdate myESPhttpUpdate;
+
+    #if defined(ESP8266)
+        ESP8266HTTPUpdate myESPhttpUpdate;
+    #elif defined(ESP32)
+        HTTPUpdate myESPhttpUpdate;
+    #endif
+    
 
     // Remove automatic reboot
     myESPhttpUpdate.rebootOnUpdate(false);
@@ -74,21 +80,28 @@ void checkForUpdate(bool firstTime) {
     myESPhttpUpdate.onError(update_error);
 
     Serial.println("Starting update from: " + String(update_server_url));
-    t_httpUpdate_return ret = firstTime ? myESPhttpUpdate.update(httpClient) : myESPhttpUpdate.updateFS(httpClient);
-    char msg[100];
+    #if defined(ESP8266)
+        t_httpUpdate_return ret = firstTime ? myESPhttpUpdate.update(httpClient) : myESPhttpUpdate.updateFS(httpClient);
+    #elif defined(ESP32)
+        t_httpUpdate_return ret = firstTime ? myESPhttpUpdate.update(httpClient) : myESPhttpUpdate.updateSpiffs(httpClient);
+    #endif
+    
 
     if (ret == HTTP_UPDATE_FAILED) {
         Serial.printf("HTTP_UPDATE_FAILED Error (%d): %s\n", myESPhttpUpdate.getLastError(), myESPhttpUpdate.getLastErrorString().c_str());
-        sprintf(msg, "Update Failed: %s", myESPhttpUpdate.getLastErrorString().c_str());
+        char err[100];
+        sprintf(err, "Update Failed: %s", myESPhttpUpdate.getLastErrorString().c_str());
+        config.lastMessage = err;
+        config.wifiMode = WIFI_AP;
+        saveConfiguration(config_file_path, config);
+        delay(1500);
+        ESP.restart();
 
     } else {
         if (ret == HTTP_UPDATE_NO_UPDATES) {
             Serial.println("No updates available");
-            sprintf(msg, "System already updated");
-
         } else {
             Serial.printf("Update %s successfully", firstTime ? "firmware" : "filesystem");
-            sprintf(msg, "Update successfully");
         }
 
         if (firstTime) {
@@ -96,11 +109,12 @@ void checkForUpdate(bool firstTime) {
             wifiClient.stop();
             checkForUpdate(false);
         }
+        else {
+            config.wifiMode = WIFI_AP;
+            saveConfiguration(config_file_path, config);
+            delay(1500);
+            ESP.restart();
+        }
     }
-
-    config.lastMessage = msg;
-    config.wifiMode = WIFI_AP;
-    saveConfiguration(config_file_path, config);
-    updateTimer.once(1.5, [] {ESP.restart();});
 
 }

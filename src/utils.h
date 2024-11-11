@@ -6,6 +6,7 @@
 #include "Commons.h"
 
 
+
 // Global variables used
 // Declare of the custom structure
 extern Config config;
