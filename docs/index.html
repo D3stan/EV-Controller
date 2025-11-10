@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="apple-mobile-web-app-capable" content="yes">
+      <title>Rave Controller</title>
+      <link rel="icon" type="image/x-icon" href="r-logo.ico">
+      <link rel="stylesheet" href="index.css">
+      <script src="index.js"></script>
+    </head>
+
+    <body>
+        <div id="popup" class="popup hidden">
+            <div class="popup-content">
+                <span class="close" onclick="closePopup()">x</span>
+                <h2 id="popup-text">Error.</h2>
+                <div class="text-popup">
+                    <p id="popup-fwid">Software Version: </p>
+                    <p id="popup-fsid">Interface Version: </p>
+                    <p id="popup-hwid">HWID: </p>
+                </div>
+                <button id="restart-button" class="wifi-settings">Update</button>
+            </div>
+        </div>
+        
+        <div class="user-settings">
+            <img src="update.png" id="update">
+            <img src="settings.png" id="settings">
+        </div>
+
+        <div class="panel" id="status-page">
+            <div id="gauge-container">
+                <div id="gauge">
+                    <div id="gauge-in"></div>
+                </div>
+                <div id="rpm-value" class="rpm-value">0</div>
+                <div class="rpm">RPM</div>
+            </div>
+
+            <h1>  </h1>
+
+            <div class="rpm-container">
+                <h1>CONNECTION: </h1>
+                <h1>  </h1>
+                <div id="status-led" class="led-red"></div>
+            </div>
+
+            <div class="rpm-container" id="rave">
+                <h1>RAVE: </h1>
+                <h1>  </h1>
+                <div id="rave-led" class="led-red"></div>
+            </div>
+            
+        </div>
+
+        <div class="panel" style="display: none;" id="settings-page">
+            <div class="custom-dropdown">
+                <button id="dropdownButton" class="dropdown-toggle">Rave Settings</button>
+                <ul id="dropdownOptions" class="dropdown-options">
+                    <li data-value="rave">Rave Settings</li>    
+                    <li data-value="wifi">WiFi Settings</li>
+                </ul>
+            </div>
+
+            <div id="rave-settings" class="toggle-container">
+                <h2 id='rpm-close-value'>Error</h2>
+                <input type='range' class="rpm-slider" id='rpm-close-slider' step="500" min='500' max='6500' value='3500'>
+                <br>
+                <h2 id='rpm-open-value'>Error</h2>
+                <input type='range' class="rpm-slider" id='rpm-open-slider' step="500" min='7500' max='15500' value='11500'>
+                <br>
+                <h2 id='hysteresis-millis-value'>Error</h2>
+                <input type='range' class="rpm-slider" id='hysteresis-millis-slider' step="200" min='0' max='2000' value='1000'>
+            </div>
+            
+
+            <div id="wifi-settings" class="toggle-container" style="display: none;">
+                <input type="text" id="wifi-ssid" placeholder="wifi name"     minlength="8" required>
+                <input type="text" id="wifi-psw" placeholder="wifi password"  minlength="8" required>
+                <br>
+                <input type="text" id="ap-ssid" placeholder="hotspot name"    minlength="8" required>
+                <input type="text" id="ap-psw" placeholder="hotspot password" minlength="8" required>
+            </div> 
+            
+
+            <button class="wifi-settings" id="update-settings">Update</button>
+        </div>
+    </body>
+</html>
