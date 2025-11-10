@@ -163,10 +163,15 @@ function onLoad(event) {
 
 function initWebSocket() {
     console.log('Trying to open a WebSocket connection...');
-    websocket = new WebSocket(gateway);
-    websocket.onopen    = onOpen;
-    websocket.onclose   = onClose;
-    websocket.onmessage = onMessage;
+    try {
+        websocket = new WebSocket(gateway);
+        websocket.onopen    = onOpen;
+        websocket.onclose   = onClose;
+        websocket.onmessage = onMessage;
+
+    } catch (err) {
+        console.log('Running in demo');
+    }
 }
 
 function onOpen(event) {
